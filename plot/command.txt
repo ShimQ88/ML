@@ -1,0 +1,5 @@
+set title "This is the Sample Data"
+set xlabel "k_value"
+set ylabel "accuracy"
+set output "a.out" 
+plot '/home/q/Desktop/Master project/ML/resource/best_accuracy.txt' using 1:2 with points title 'Data'
