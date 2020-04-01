@@ -100,27 +100,27 @@ Mat test_and_save_classifier(const Ptr<StatModel>& model,
 /*************   Example of how to predict a single sample ************************/   
 // Use that for the assignment3, for every frame after computing the features, r is the prediction given the features listed in this format
     //Mat sample = data.row(i);
-    Mat sample1 = (Mat_<float>(1,9) << 1.52101, 13.64, 4.4899998, 1.1, 71.779999, 0.059999999, 8.75, 0, 0);// 1
-    float r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
-    sample1 = (Mat_<float>(1,9) << 1.518, 13.71, 3.9300001, 1.54, 71.809998, 0.54000002, 8.21, 0, 0.15000001);//2
-    r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
-    sample1 = (Mat_<float>(1,9) << 1.51694,12.86,3.58,1.31,72.61,0.61,8.79,0,0);//3
-    r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
-//    sample1 = (Mat_<float>(1,9) << );//4
-//    r = model->predict( sample1 );
-//    cout << "Prediction: " << r << endl;
-    sample1 = (Mat_<float>(1,9) << 1.5151401, 14.01, 2.6800001, 3.5, 69.889999, 1.6799999, 5.8699999, 2.2, 0);//5
-    r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
-    sample1 = (Mat_<float>(1,9) << 1.51852, 14.09, 2.1900001, 1.66, 72.669998, 0, 9.3199997, 0, 0);//6
-    r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
-    sample1 = (Mat_<float>(1,9) << 1.51131,13.69,3.2,1.81,72.81,1.76,5.43,1.19,0);//7
-    r = model->predict( sample1 );
-    cout << "Prediction: " << r << endl;
+//     Mat sample1 = (Mat_<float>(1,9) << 1.52101, 13.64, 4.4899998, 1.1, 71.779999, 0.059999999, 8.75, 0, 0);// 1
+//     float r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
+//     sample1 = (Mat_<float>(1,9) << 1.518, 13.71, 3.9300001, 1.54, 71.809998, 0.54000002, 8.21, 0, 0.15000001);//2
+//     r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
+//     sample1 = (Mat_<float>(1,9) << 1.51694,12.86,3.58,1.31,72.61,0.61,8.79,0,0);//3
+//     r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
+// //    sample1 = (Mat_<float>(1,9) << );//4
+// //    r = model->predict( sample1 );
+// //    cout << "Prediction: " << r << endl;
+//     sample1 = (Mat_<float>(1,9) << 1.5151401, 14.01, 2.6800001, 3.5, 69.889999, 1.6799999, 5.8699999, 2.2, 0);//5
+//     r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
+//     sample1 = (Mat_<float>(1,9) << 1.51852, 14.09, 2.1900001, 1.66, 72.669998, 0, 9.3199997, 0, 0);//6
+//     r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
+//     sample1 = (Mat_<float>(1,9) << 1.51131,13.69,3.2,1.81,72.81,1.76,5.43,1.19,0);//7
+//     r = model->predict( sample1 );
+//     cout << "Prediction: " << r << endl;
     return confusion_Matrix;
     
 /**********************************************************************/
@@ -139,17 +139,24 @@ build_mlp_classifier(   Mat data,
 {
     int class_count=2;
     // Create or load MLP classifier
-    // int division=ntest_samples;
+    
+
 
     int k_fold_value=ntrain_samples/ntest_samples;
-    int value=0;
-    // while()
-    int the_number_of_data=9;
+
+
+    
+    int the_number_of_data=data.cols;//determine how many columns of data
     Mat train_data = Mat::zeros( ntrain_samples, the_number_of_data, CV_32F );
     Mat test_data = Mat::zeros( ntest_samples, the_number_of_data, CV_32F );
 
+    cout<<"train_data:"<<train_data<<endl;
+    cout<<"the_number_of_data:"<<the_number_of_data<<endl;
+    getchar();
+
     // sprintf(head_buffer, "%s \n", "#index, accuracy");  //header
     // file <<head_buffer;
+    int value=0;
     float mean=0;
     float temp_accuracy[k_fold_value];
     Mat con_mat[k_fold_value];

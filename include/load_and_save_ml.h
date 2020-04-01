@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
+#include <fstream>
+#include <string>
 
 // Opencv Headers
 #include "opencv2/core/core.hpp"
@@ -32,6 +34,9 @@ bool
 read_num_class_data( const string& filename, int var_count,
                      Mat* _data, Mat* _responses );
 
-void help(bool swap_the_role_train_to_test,int ntrain_samples, int ntest_samples, int ml_technique);
+void 
+help(bool swap_the_role_train_to_test,int ntrain_samples, int ntest_samples, int ml_technique);
 
+int
+Count_Column_Numb(const string& filename);
 #endif // ADA_BOOST_H

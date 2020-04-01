@@ -1,6 +1,18 @@
 // Project Headers
 #include "load_and_save_ml.h"
-
+int
+Count_Column_Numb(const string& filename){
+    int numb_of_data_cols;
+    ifstream myfile(filename);
+    string line;
+    if (myfile.is_open())
+    {
+        getline (myfile,line);        
+        numb_of_data_cols=count(line.begin(), line.end(), ',');
+        myfile.close();
+    }
+    return numb_of_data_cols;
+}
 bool
 read_num_class_data( const string& filename, int var_count,
                      Mat* _data, Mat* _responses )
@@ -87,8 +99,9 @@ load_and_save_ml( const string& data_filename,
     */
     Mat data;
     Mat responses;
+    int numb_of_data_cols=Count_Column_Numb(data_filename);
 
-    bool ok = read_num_class_data( data_filename, 9, &data, &responses );//third parameter: FEATURES
+    bool ok = read_num_class_data( data_filename, numb_of_data_cols, &data, &responses );//third parameter: FEATURES
     if( !ok )
         return ok;
 

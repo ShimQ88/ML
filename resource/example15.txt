@@ -1,0 +1,16 @@
+#k_fold_value is 0 
+#index, accuracy
+0, 0.490909 
+#k_fold_value is 1 
+#index, accuracy
+0, 0.636364 
+#k_fold_value is 2 
+#index, accuracy
+0, 0.654545 
+#k_fold_value is 3 
+#index, accuracy
+0, 0.327273 
+#k_fold_value is 4 
+#index, accuracy
+0, 0.181818 
+-----------------------

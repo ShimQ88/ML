@@ -4,11 +4,19 @@ Hello This is the code for machine learning master project in massey university
 How to use it with the Glass.data: make
 g++ MLP_example_change_val.cpp -o MLP_example_change_val `pkg-config --cflags --libs opencv`
 
+Contour
+
+./main -contour dataset/birds
+./main -contour dataset/mammal
 
 
 Train:
 
 ./main -save data/output.xml -data data/input.data
+
+./main -save data/resource10.xml -data data/resource10.data
+./main -save data/resource15.xml -data data/resource15.data
+./main -save data/resource20.xml -data data/resource20.data
 
 
 Test:

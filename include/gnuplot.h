@@ -32,4 +32,6 @@ void Gnuplot::operator() (const string & command)
 	fprintf(gnuplotpipe,"%s\n",command.c_str());
 	fflush(gnuplotpipe);
 }
+
+
 #endif

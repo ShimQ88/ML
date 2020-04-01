@@ -1,6 +1,7 @@
 // Project Headers
 #include "load_and_save_ml.h"
 #include "gnuplot.h"
+#include "contour.h"
 // #include "class.h"
 
 // System Headers
@@ -17,6 +18,21 @@ using namespace std;
 using namespace cv;
 using namespace cv::ml;
 
+void Gnuplot_Generate(){
+    Gnuplot gp;
+    ifstream f_plot;
+    f_plot.open ("plot/command.txt");
+    string line;
+    if(f_plot.is_open())
+    {
+        while (getline(f_plot,line))
+        {
+          cout << line << '\n';
+          gp(line);
+        }
+        f_plot.close();
+    }
+}
 
 void info(){
     cout<<"hello this is the program for machine learning"<<endl;
@@ -52,6 +68,9 @@ int main(int argc, char *argv[]){
             i++;
             filename_to_save ="-save";
             train_and_test_mode=true;
+        }else if(strcmp(argv[i],"-contour") == 0){// flag "-tt filename.xml" train and test
+            contour(argv[2]);
+            exit(1);//terminate program
         }
     }
     // #ifndef ADA_BOOST_H
@@ -66,19 +85,7 @@ int main(int argc, char *argv[]){
     // cout<<"accuracy: "<<accuracy<<endl;
     // cout<<"value: "<<value  <<endl;
 
-    Gnuplot gp;
-    ifstream f_plot;
-    f_plot.open ("plot/command.txt");
-    string line;
-    if(f_plot.is_open())
-    {
-        while (getline(f_plot,line))
-        {
-          cout << line << '\n';
-          gp(line);
-        }
-        f_plot.close();
-    }
+    Gnuplot_Generate();
 
     // build_boost_classifier(data_filename, filename_to_save, filename_to_load, 0.7, true );
     // build_random_forest_classifier( data_filename, filename_to_save, filename_to_load );
