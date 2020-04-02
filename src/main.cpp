@@ -21,14 +21,17 @@ using namespace cv::ml;
 void Gnuplot_Generate(){
     Gnuplot gp;
     ifstream f_plot;
-    f_plot.open ("plot/command.txt");
+    f_plot.open ("plot/command.testxt");
+    // f_plot.open ("plot/RMSE.txt");
     string line;
     if(f_plot.is_open())
     {
         while (getline(f_plot,line))
         {
           cout << line << '\n';
+          // cout<<line<<endl;
           gp(line);
+          // getchar();
         }
         f_plot.close();
     }
@@ -75,12 +78,12 @@ int main(int argc, char *argv[]){
     }
     // #ifndef ADA_BOOST_H
     // build_boost_classifier( data_filename, filename_to_save, filename_to_load,0.5,false, &accuracy,&value );
-    load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.85,0);
+    load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.95,0);
     if(train_and_test_mode==true){ 
         filename_to_save="";
         filename_to_load="-load";
         // build_boost_classifier( data_filename, filename_to_save, filename_to_load,0.8,true, &accuracy,&value );
-        load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.85,0);
+        load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.95,0);
     }
     // cout<<"accuracy: "<<accuracy<<endl;
     // cout<<"value: "<<value  <<endl;

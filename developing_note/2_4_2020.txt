@@ -1,0 +1,6 @@
+2/04/2020 update
+
+1. data shuffling function updated, but it is only sample code and working with 2 features, it requires to update flexible number of features. The function is "Count_Column_Numb(const string& filename)" in load_and_save_ml.cpp.
+
+2. Testing with Gnuplot sample codes and updating command for graph. Graph saved within graph folder. The accuracy calculated with each 18 samples in 18 diff,erent blocks, and with CE[10],CE[15],CE[20]
+

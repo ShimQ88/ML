@@ -2,6 +2,7 @@
 #include "ml.h"
 #include "class.h"
 
+
 template<typename T>
 Ptr<T> load_classifier(const string& filename_to_load)
 {
@@ -46,7 +47,7 @@ Mat test_and_save_classifier(const Ptr<StatModel>& model,
     // for(int i=0; i<nsamples_all; i++){
     Mat confusion_Matrix = Mat::zeros( 2, 2, CV_32S );
     
-    getchar();
+    // getchar();
     for(int i=0; i<nsamples_all; i++){
         Mat sample = data.row(i);
         // int actual_value=responses.at<int>(i)-48;
@@ -143,16 +144,17 @@ build_mlp_classifier(   Mat data,
 
 
     int k_fold_value=ntrain_samples/ntest_samples;
-
+    int n_total_samples=ntrain_samples+ntest_samples;
 
     
     int the_number_of_data=data.cols;//determine how many columns of data
     Mat train_data = Mat::zeros( ntrain_samples, the_number_of_data, CV_32F );
     Mat test_data = Mat::zeros( ntest_samples, the_number_of_data, CV_32F );
+    string numb_ce=to_string(the_number_of_data+1);
 
-    cout<<"train_data:"<<train_data<<endl;
-    cout<<"the_number_of_data:"<<the_number_of_data<<endl;
-    getchar();
+    // cout<<"train_data:"<<train_data<<endl;
+    // cout<<"the_number_of_data:"<<the_number_of_data<<endl;
+    // getchar();
 
     // sprintf(head_buffer, "%s \n", "#index, accuracy");  //header
     // file <<head_buffer;
@@ -160,8 +162,8 @@ build_mlp_classifier(   Mat data,
     float mean=0;
     float temp_accuracy[k_fold_value];
     Mat con_mat[k_fold_value];
-    ofstream file ("resource/example.txt");
-    ofstream file_the_best("resource/best_accuracy.txt");
+    ofstream file ("resource/example"+numb_ce+".txt");
+    ofstream file_the_best("resource/best_accuracy"+numb_ce+".txt");
 
     char head_buffer1[80];
     // sprintf(head_buffer1, "%s \n", "#index, t_method, a_function, method_param, max_iter, class_count, accuracy");  //header
@@ -186,7 +188,7 @@ build_mlp_classifier(   Mat data,
         // cout<<ntrain_samples+ntest_samples<<endl;
         // getchar();
         
-        for(int i=0;i<ntrain_samples+ntest_samples;i++){
+        for(int i=0;i<n_total_samples;i++){
             for(int j=0;j<the_number_of_data;j++){
                 if( (i>=block)&&(i<block+ntest_samples) ){
                     test_data.at<float>(i_test,j)=data.at<float>(i,j);
@@ -243,7 +245,7 @@ build_mlp_classifier(   Mat data,
             // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             
-            //Test debug
+            //Test debugs
             // cout<<"train_data"<<train_data<<endl<<endl;
             // cout<<"test_responses"<<test_responses<<endl;
             // getchar();
@@ -252,7 +254,7 @@ build_mlp_classifier(   Mat data,
             i_train=0;
             i_test=0;
             cout << "Unrolling the responses...\n";
-            for( int i = 0; i < ntrain_samples+ntest_samples; i++ ){
+            for( int i = 0; i < n_total_samples; i++ ){
                 int cls_label = responses.at<int>(i) - 48;// - 'A'; //change to numerical classes, still they read as chars
                 cout << "labels " << cls_label << endl;
                 if( (i>=block)&&(i<block+ntest_samples) ){
@@ -291,7 +293,7 @@ build_mlp_classifier(   Mat data,
             tdata = TrainData::create(train_data, ROW_SAMPLE, train_responses);    
             
             int i=0;
-            int max_loop=1;
+            int max_loop=5;
             Neural_Network NN[max_loop];
             String buffer[max_loop];
             String buffer2[max_loop];
@@ -305,7 +307,7 @@ build_mlp_classifier(   Mat data,
                     break;
                 }
                 float accuracy;
-                max_iter=max_iter+10;
+                max_iter=max_iter+50;
 
 
                 
@@ -367,7 +369,7 @@ build_mlp_classifier(   Mat data,
             temp_accuracy[value]=the_best_accuracy;
             value++;
             mean=mean+the_best_accuracy;
-            getchar();
+            // getchar();
 
         }
     }
@@ -402,7 +404,7 @@ build_mlp_classifier(   Mat data,
     sprintf(sta_dev_buffer, "#sta_dev: %f \n", sta_dev);  //header
     file_the_best<<sta_dev_buffer;
     // cout<<"sta_dev: "<<sta_dev;
-    getchar();
+    // getchar();
 
     char mse_buffer[70];
     sprintf(mse_buffer, "#Mean Square Error: %1.f ± %1.f%% \n", mean*100,sta_dev*100); 

@@ -1,16 +1,70 @@
 // Project Headers
 #include "load_and_save_ml.h"
 int
-Count_Column_Numb(const string& filename){
+Count_Column_Numb(const string& filename){//only two case sample work need to develop more
     int numb_of_data_cols;
     ifstream myfile(filename);
-    string line;
+    ofstream shuffled_file("data/shuffle_output.txt");
+    string line1[300];
+    string line2[300];
+    string temp_line;
+    int i=0;
+    int j=0;
     if (myfile.is_open())
     {
-        getline (myfile,line);        
-        numb_of_data_cols=count(line.begin(), line.end(), ',');
+        // getline (myfile,line);  
+        while ( getline (myfile,temp_line) )
+        {
+            if(i==0){
+                numb_of_data_cols=count(temp_line.begin(), temp_line.end(), ',');    
+            }
+            
+            if(temp_line[0]=='0')
+            {
+                // cout<<"hahaha"<<endl;
+                line1[i]=temp_line;
+                i++;
+            }
+            else if(temp_line[0]=='1')
+            {
+                line2[j]=temp_line;
+                j++;
+            }
+            else
+            {
+                cout<<"error"<<endl;
+                getchar();
+            }
+            
+        }
+        
+        // cout<<"numb_of_data_cols: "<<numb_of_data_cols<<endl;
+        
+        // cout<<"The first string: "<<temp_line[0];
+        // getchar();
         myfile.close();
     }
+    int i1=0;
+    int j1=0;
+    if (shuffled_file.is_open())
+    {
+        while(1){
+            if( (i1==i)&&(j1==j) ){
+                break;
+            }
+            if(i1!=i){
+                shuffled_file <<line1[i1]+'\n';
+                i1++;
+            }
+            if(j1!=j){
+                shuffled_file << line2[j1]+'\n';
+                j1++;
+            }
+            
+        }
+        shuffled_file.close();
+    }
+    
     return numb_of_data_cols;
 }
 bool
@@ -100,10 +154,16 @@ load_and_save_ml( const string& data_filename,
     Mat data;
     Mat responses;
     int numb_of_data_cols=Count_Column_Numb(data_filename);
+    string name="data/shuffle_output.txt";
+    // cout<<"numb_of_data_cols: "<<numb_of_data_cols<<endl;
+    // getchar();
 
-    bool ok = read_num_class_data( data_filename, numb_of_data_cols, &data, &responses );//third parameter: FEATURES
-    if( !ok )
+    bool ok = read_num_class_data( name, numb_of_data_cols, &data, &responses );//third parameter: FEATURES
+    // bool ok = read_num_class_data( data_filename, numb_of_data_cols, &data, &responses );//third parameter: FEATURES
+    if( !ok ){
+        cout<<"error from read file"<<endl;
         return ok;
+    }
 
     //preparing part
     int nsamples_all = data.rows;
