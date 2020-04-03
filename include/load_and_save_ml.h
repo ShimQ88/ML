@@ -18,9 +18,6 @@ using namespace std;
 using namespace cv;
 using namespace cv::ml;
 
-// Project Headers
-// #include "load_and_save_classifier.h"
-
 // --------------------------------------------------------------------------------
 // Image Functions
 // --------------------------------------------------------------------------------
@@ -39,4 +36,5 @@ help(bool swap_the_role_train_to_test,int ntrain_samples, int ntest_samples, int
 
 int
 Count_Column_Numb(const string& filename);
-#endif // ADA_BOOST_H
+
+#endif // end of LOAD_AND_SAVE_ML_H

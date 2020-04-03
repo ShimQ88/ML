@@ -2,7 +2,7 @@
 set title "Comparsion with different CEs"
 set xlabel "k value"
 set ylabel "accuracy"
-set xrange [-1:20]
+set xrange [-1:]
 set yrange [0:1]
 CE10 = 10
 CE15 = 15

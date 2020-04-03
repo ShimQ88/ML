@@ -26,3 +26,9 @@ Test:
 Train and Test:
 
 ./main -tt data/output.xml -data data/input.data 
+
+
+#mean: 0.625731 
+#variance: 0.020417 
+#sta_dev: 0.142886 
+#Mean Square Error: 63 ± 14% 
