@@ -1,0 +1,15 @@
+#k_fold_value, t_method, a_function, method_param, max_iter, class_count, accuracy
+0, 0, 1, 0.001000, 500, 2, 0.489130 
+1, 0, 1, 0.001000, 500, 2, 0.641304 
+2, 0, 1, 0.001000, 500, 2, 0.663043 
+-----------------------
+#k_fold_value, t_method, a_function, method_param, max_iter, class_count, accuracy
+0, 0, 1, 0.001000, 700, 2, 0.489130 
+1, 0, 1, 0.001000, 700, 2, 0.641304 
+2, 0, 1, 0.001000, 700, 2, 0.684783 
+-----------------------
+#k_fold_value, t_method, a_function, method_param, max_iter, class_count, accuracy
+0, 0, 1, 0.001000, 900, 2, 0.489130 
+1, 0, 1, 0.001000, 900, 2, 0.706522 
+2, 0, 1, 0.001000, 900, 2, 0.663043 
+-----------------------

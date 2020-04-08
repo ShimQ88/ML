@@ -47,7 +47,7 @@ bool ModifyFile(ofstream &file_the_best,float mean, float variance,float sta_dev
     
     if (file_the_best)
     {
-       file_the_best<<"\n\n";    
+        // file_the_best<<"\n\n";    
         file_the_best<<mean_buffer;
         file_the_best<<variance_buffer;
         file_the_best<<sta_dev_buffer;
@@ -55,6 +55,9 @@ bool ModifyFile(ofstream &file_the_best,float mean, float variance,float sta_dev
         file_the_best<<"\n\n";
         file_the_best<<"#Confusion Matrix\n";
         for(int i=0;i<k_fold_value;i++){
+            char buffer[50];
+            sprintf(buffer, "#k=%d\n", i);  //header
+            file_the_best<<buffer;
             file_the_best<<"#";
             file_the_best<<con_mat[i].at<int>(0,0);
             file_the_best<<", ";
@@ -66,8 +69,9 @@ bool ModifyFile(ofstream &file_the_best,float mean, float variance,float sta_dev
             file_the_best<<con_mat[i].at<int>(1,1);
             file_the_best<<"\n\n";
         }
-            file_the_best.close();
+            
     }
+    file_the_best << "-----------------------\n";
     return 0;
 }
 
@@ -133,7 +137,9 @@ Mat test_and_save_classifier(const Ptr<StatModel>& model,
         int actual_value=responses.at<float>(i);
         cout << "Actual: " << actual_value << " row " << sample << endl;
         float r = model->predict( sample );
-        cout << "Predict:  r = " << round(r) << endl;//rounding in case of random_forest
+        // cout<<"r: "<<r<<endl;
+        // getchar();
+        // cout << "Predict:  r = " << round(r) << endl;//rounding in case of random_forest
         if( (int)round(r) == actual_value ){ //prediction is correct
             training_correct_predict++;
         }
@@ -222,6 +228,8 @@ build_mlp_classifier(   Mat data,
     
     int k_fold_value=ntrain_samples/ntest_samples;
     int n_total_samples=ntrain_samples+ntest_samples;
+    // cout<<"k_fold_value: "<<k_fold_value<<endl;
+    // getchar();
 
     
     int the_number_of_data=data.cols;//determine how many columns of data
@@ -239,101 +247,117 @@ build_mlp_classifier(   Mat data,
     float sum_accuracy=0;
     float temp_accuracy[k_fold_value];
     Mat con_mat[k_fold_value];
-    ofstream file ("resource/example"+numb_ce+".txt");
-    ofstream file_the_best("resource/best_accuracy"+numb_ce+".txt");
+    ofstream file ("resource/accuracy"+numb_ce+".txt");
+    ofstream file_the_best("resource/standard_deviation"+numb_ce+".txt");
+    // ofstream file_data("resource/data"+numb_ce+".txt");
 
     // char head_buffer1[80];
     // sprintf(head_buffer1, "%s \n", "#index, t_method, a_function, method_param, max_iter, class_count, accuracy");  //header
     // sprintf(head_buffer1, "%s \n", "#k_fold_value, accuracy");  //header
-    file_the_best <<"#k_fold_value, accuracy\n";
+    
+    // file_the_best <<"#k_fold_value, index, t_method, a_function, method_param, max_iter, class_count, accuracy\n";
+    int i=0;
+    double method_param = 0.001;
+    int max_iter = 300;
+    int max_loop=0;
     while(1){
-        if(value==k_fold_value){break;}
-        char head_buffer[80];
-        
-        // sprintf(head_buffer, "%s \n", "#index, accuracy");  //header
-        sprintf(head_buffer, "#k_fold_value is %d \n", value);  //header
-        file <<head_buffer;
-        // file <<"#index, t_method, a_function, method_param, max_iter, class_count, accuracy\n";//header
-        file << "#index, accuracy\n";
-        int block=ntest_samples*value;
-        
-        // cout<<"ntest_samples: "<<ntest_samples<<endl;
-        // cout<<"ntrain_samples: "<<ntrain_samples<<endl;
-        // cout<<"block: "<<block<<endl;
-        // cout<<"block+ntest_samples:"<<block+ntest_samples<<endl;
-        // cout<<ntrain_samples+ntest_samples<<endl;
-        // getchar();
+        if(max_loop==3){break;}
+        max_iter=max_iter+200;
+        file <<"#k_fold_value, t_method, a_function, method_param, max_iter, class_count, accuracy\n";//header
+        value=0;
+        while(1){
+            if(value==k_fold_value){break;}
+            
+            char head_buffer[80];
+            
+            // sprintf(head_buffer, "%s \n", "#index, accuracy");  //header
+            // sprintf(head_buffer, "#k_fold_value is %d \n", value);  //header
+            // file <<head_buffer;
+            
+            // file << "#index, accuracy\n";
+            int block=ntest_samples*value;
+            
+            // cout<<"ntest_samples: "<<ntest_samples<<endl;
+            // cout<<"ntrain_samples: "<<ntrain_samples<<endl;
+            // cout<<"block: "<<block<<endl;
+            // cout<<"block+ntest_samples:"<<block+ntest_samples<<endl;
+            // cout<<ntrain_samples+ntest_samples<<endl;
+            // getchar();
 
-        Mat train_responses = Mat::zeros( ntrain_samples, class_count, CV_32F );
-        Mat test_responses = Mat::zeros( ntest_samples, class_count, CV_32F );
-        Mat test_responses_int=Mat::zeros( ntest_samples, 1, CV_32F );
-        Mat train_responses_int=Mat::zeros( ntrain_samples, 1, CV_32F );
+            Mat train_responses = Mat::zeros( ntrain_samples, class_count, CV_32F );
+            Mat test_responses = Mat::zeros( ntest_samples, class_count, CV_32F );
+            Mat test_responses_int = Mat::zeros( ntest_samples, 1, CV_32F );
+            Mat train_responses_int = Mat::zeros( ntrain_samples, 1, CV_32F );
 
-        //1. unroll the responses
-        Split_train_test_data(&train_data, &test_data, &train_responses,&test_responses,
-                &train_responses_int, &test_responses_int, data, responses,
-                block, the_number_of_data, n_total_samples, ntest_samples);
+            //1. unroll the responses
+            Split_train_test_data(&train_data, &test_data, &train_responses,&test_responses,
+                    &train_responses_int, &test_responses_int, data, responses,
+                    block, the_number_of_data, n_total_samples, ntest_samples);
 
-        // cout<<"test_data: "<<test_data<<endl;
-        // getchar();
-        // cout<<"train_data: "<<train_data<<endl;
-        // getchar();
-        Ptr<ANN_MLP> model;
+            // cout<<"test_data: "<<test_data<<endl;
+            // getchar();
+            // cout<<"train_data: "<<train_data<<endl;
+            // getchar();
+            Ptr<ANN_MLP> model;
 
-        if( !filename_to_load.empty() )
-        {
-            model = load_classifier<ANN_MLP>(filename_to_load);
-            if( model.empty() )
-                return false;
+            if( !filename_to_load.empty() )
+            {
+                model = load_classifier<ANN_MLP>(filename_to_load);
+                if( model.empty() )
+                    return false;
+                    
+                test_and_save_classifier(model, test_data, test_responses_int, ntest_samples, 0, filename_to_save);
                 
-            test_and_save_classifier(model, test_data, test_responses_int, ntest_samples, 0, filename_to_save);
-            
-        }
-        else
-        {
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            // MLP does not support categorical variables by explicitly.
-            // So, instead of the output class label, we will use
-            // a binary vector of <class_count> components for training and,
-            // therefore, MLP will give us a vector of "probabilities" at the
-            // prediction stage
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            }
+            else
+            {
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // MLP does not support categorical variables by explicitly.
+                // So, instead of the output class label, we will use
+                // a binary vector of <class_count> components for training and,
+                // therefore, MLP will give us a vector of "probabilities" at the
+                // prediction stage
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            // 2. train classifier
-            int layer_sz[] = { data.cols, 100, 100, class_count };
-            cout <<  " sizeof layer_sz " << sizeof(layer_sz) << " sizeof layer_sz[0]) " << sizeof(layer_sz[0]) << endl;
-            int nlayers = (int)(sizeof(layer_sz)/sizeof(layer_sz[0]));
-            cout << " nlayers  " << nlayers << endl;
-            Mat layer_sizes( 1, nlayers, CV_32S, layer_sz );
+                // 2. train classifier
+                int layer_sz[] = { data.cols, 100, 100, class_count };
+                cout <<  " sizeof layer_sz " << sizeof(layer_sz) << " sizeof layer_sz[0]) " << sizeof(layer_sz[0]) << endl;
+                int nlayers = (int)(sizeof(layer_sz)/sizeof(layer_sz[0]));
+                cout << " nlayers  " << nlayers << endl;
+                Mat layer_sizes( 1, nlayers, CV_32S, layer_sz );
 
-            int t_method = ANN_MLP::BACKPROP;
-            int a_function = ANN_MLP::SIGMOID_SYM;
-            // double method_param = 0.001;
-            double method_param = 0.0001;
-            // int max_iter = 300;
-            int max_iter = 5;
+                int t_method = ANN_MLP::BACKPROP;
+                int a_function = ANN_MLP::SIGMOID_SYM;
+                // double method_param = 0.001;
+                
 
-            Ptr<TrainData> tdata;
-            tdata = TrainData::create(train_data, ROW_SAMPLE, train_responses);    
-            
-            int i=0;
-            int max_loop=1;
-            Neural_Network NN[max_loop];
-            String buffer[max_loop];
-            String buffer2[max_loop];
+                Ptr<TrainData> tdata;
+                tdata = TrainData::create(train_data, ROW_SAMPLE, train_responses);    
+                
+                int i=0;
+                int max_loop=4;
+                // Neural_Network NN[max_loop];
+                Neural_Network NN;
+                // String buffer[max_loop];
+                // String buffer2[max_loop];
+                String buffer;
+                String buffer2;
 
-            float the_best_accuracy=-9999;
-            int the_i_best_accuracy=0;
-            Mat confusion_matrix;
-            
-            while(1){
-                if(i==max_loop){
-                    break;
-                }
+                float the_best_accuracy=-9999;
+                int the_i_best_accuracy=0;
+                Mat confusion_matrix;
+
+
+                //training section
+                // if(i==max_loop){
+                //     break;
+                // }
+                t_method = ANN_MLP::BACKPROP; // { BACKPROP =0, RPROP = 1, ANNEAL = 2 }
+                a_function = ANN_MLP::SIGMOID_SYM; // { IDENTITY = 0, SIGMOID_SYM = 1, GAUSSIAN = 2, RELU = 3, LEAKYRELU = 4 }
                 float accuracy;
-                max_iter=max_iter+50;
+                // max_iter=max_iter+300;
                 
-                cout << "iteration ("<<i<<") Training the classifier (may take a few minutes)...\n";
+                cout << "iteration ("<<value<<") Training the classifier (may take a few minutes)...\n";
                 model = ANN_MLP::create();
                 model->setLayerSizes(layer_sizes);
                 model->setActivationFunction(a_function, 0, 0);
@@ -349,71 +373,77 @@ build_mlp_classifier(   Mat data,
 
                 accuracy=Accuracy_Calculation(confusion_matrix);
                 cout<<"accuracy: "<<accuracy<<endl;
-                NN[i].Reset_Parameters( i, t_method, a_function, method_param, max_iter, class_count, accuracy,confusion_matrix);
+                NN.Reset_Parameters( value, t_method, a_function, method_param, max_iter, class_count, accuracy,confusion_matrix);
                 
-                if(the_best_accuracy<accuracy){
-                    the_best_accuracy=accuracy;
-                    the_i_best_accuracy=i;
-                }
+                // if(the_best_accuracy<accuracy){
+                //     the_best_accuracy=accuracy;
+                //     the_i_best_accuracy=i;
+                // }
 
-                buffer[i]=NN[i].Return_Accuracy();
-                buffer2[i]=NN[i].Return_Accuracy2();
+                buffer=NN.Return_Parameter();
+                buffer2=NN.Return_Parameter();
 
                 // sprintf(buffer[i], "%d, %d, %d, %lf, %d, %d, %f \n", i, t_method, a_function, method_param, max_iter, class_count, accuracy);  //header
                 
-                file<<buffer[i];
+                file<<buffer;
                 
-                i++;
+                // i++;
+                 
+
+                // cout<<"the best accuracy index: "<<the_i_best_accuracy<<endl;
+                // cout<<"the best accuracy: "<<the_best_accuracy<<endl;
+
                 
+                // cout<<"the_i_best_accuracy:"<<the_i_best_accuracy<<endl;
+                // cout<<"confusion_matrix: "<<confusion_matrix<<endl;
+
+                // file_the_best<<value;
+                // file_the_best<<", " ;
+                // file_the_best<<buffer2[the_i_best_accuracy];
+                // file_the_best<<NN[i].Return_Accuracy2();
+                con_mat[value]=confusion_matrix;
+
+                // file_the_best<<"\n\n";
+                // file_the_best<<"Confusion Matrix\n";
+                // file_the_best<<confusion_matrix;
+
+                temp_accuracy[value]=accuracy;
+                value++;
+                sum_accuracy=sum_accuracy+accuracy;
+                // getchar();
+
             }
-
-            cout<<"the best accuracy index: "<<the_i_best_accuracy<<endl;
-            cout<<"the best accuracy: "<<the_best_accuracy<<endl;
-
-            
-            cout<<"the_i_best_accuracy:"<<the_i_best_accuracy<<endl;
-            cout<<"confusion_matrix: "<<confusion_matrix<<endl;
-
-            file_the_best<<value;
-            file_the_best<<", " ;
-            file_the_best<<buffer2[the_i_best_accuracy];
-            // file_the_best<<NN[i].Return_Accuracy2();
-            con_mat[value]=confusion_matrix;
-
-            // file_the_best<<"\n\n";
-            // file_the_best<<"Confusion Matrix\n";
-            // file_the_best<<confusion_matrix;
-
-            temp_accuracy[value]=the_best_accuracy;
-            value++;
-            sum_accuracy=sum_accuracy+the_best_accuracy;
-            // getchar();
-
         }
+        file << "-----------------------\n";
+        float mean, variance, sta_dev;
+        Calculate_standard_deviation(&mean,&variance,&sta_dev,temp_accuracy,sum_accuracy,k_fold_value);
+        ModifyFile(file_the_best,mean, variance,sta_dev,k_fold_value,con_mat);
+        sum_accuracy=0;
+        // cout<<"here is the point"<<endl;
+        // getchar();
+        max_loop++;
     }
-    float mean, variance, sta_dev;
-    Calculate_standard_deviation(&mean,&variance,&sta_dev,temp_accuracy,sum_accuracy,k_fold_value);
-    ModifyFile(file_the_best,mean, variance,sta_dev,k_fold_value,con_mat);
+    
     
 
     //print
-    cout<<"mean: "<<mean<<endl;
-    cout<<"variance: "<<variance<<endl;
-    cout<<"standard_deviation: "<<sta_dev<<endl;
-    cout<<"Mean Square Error: "<<mean*100<<"+-"<<sta_dev*100<<"%"<<endl;
+    // cout<<"mean: "<<mean<<endl;
+    // cout<<"variance: "<<variance<<endl;
+    // cout<<"standard_deviation: "<<sta_dev<<endl;
+    // cout<<"Mean Square Error: "<<mean*100<<"+-"<<sta_dev*100<<"%"<<endl;
     
 
     if (file.is_open()){
-        file << "-----------------------";
+        // file << "-----------------------";
     }else{ 
         cout << "Unable to open file";
     }
 
-    // if (file_the_best.is_open()){
-    //     file_the_best << "-----------------------";
-    // }else{ 
-    //     cout << "Unable to open file";
-    // }
+    if (file_the_best.is_open()){
+        // file_the_best << "-----------------------";
+    }else{ 
+        cout << "Unable to open file";
+    }
     
     
     file.close();
@@ -489,6 +519,7 @@ bool build_boost_classifier( Mat data,
                 if(cls_label==1){
                     // train_responses.at<float>(i, 0) = 1.f;
                     train_responses.at<int>(i, 0) = 1;
+
                     // cout<<"ha"<<endl;
                 }
                 // train_responses.at<float>(i, cls_label) = 1;

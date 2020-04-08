@@ -21,8 +21,8 @@ using namespace cv::ml;
 void Gnuplot_Generate(){
     Gnuplot gp;
     ifstream f_plot;
-    f_plot.open ("plot/command.testxt");
-    // f_plot.open ("plot/RMSE.txt");
+    // f_plot.open ("plot/command.txt");
+    f_plot.open ("plot/temp_com5.txt");
     string line;
     if(f_plot.is_open())
     {
@@ -52,39 +52,75 @@ int main(int argc, char *argv[]){
 	string filename_to_save = "";
     string filename_to_load = "";
     string data_filename = "letter-recognition.data";
+    string multiple_data_filename[3];
+    multiple_data_filename[0]="";
+    multiple_data_filename[1]="";
+    multiple_data_filename[2]="";
+
+    string multiple_filename_to_save[3];
+    multiple_filename_to_save[0] = "";
+    multiple_filename_to_save[1] = "";
+    multiple_filename_to_save[2] = "";
     bool train_and_test_mode=false;
+    bool multiple_mode=false;
     info();
-    getchar();
+    // getchar();
+    int numb_data=0;
     for(int i = 1; i<argc; i++)
     {
-        if(strcmp(argv[i],"-data")==0){ // flag "-data letter_recognition.xml"
+        if(strcmp(argv[i],"-data2")==0){ // flag "-data letter_recognition.xml"
         	i++; 
             data_filename = argv[i];
         }else if( strcmp(argv[i],"-save") == 0 ){ // flag "-save filename.xml"
+            // i++;
+            // filename_to_save = argv[i];
             i++;
-            filename_to_save = argv[i];
+            int j=0;
+            while(1){
+                if(strcmp(argv[i],"-data") == 0){
+                    break;
+                }
+                multiple_filename_to_save[j]=argv[i];
+                i++;
+                j++;
+            }
+            i--;
 	    cout << "filename to save is "<< filename_to_save << endl;
         }else if( strcmp(argv[i],"-load") == 0){ // flag "-load filename.xml"
             i++;
             filename_to_load = argv[i];
-        }else if(strcmp(argv[i],"-tt") == 0){// flag "-tt filename.xml" train and test
-            i++;
-            filename_to_save ="-save";
-            train_and_test_mode=true;
-        }else if(strcmp(argv[i],"-contour") == 0){// flag "-tt filename.xml" train and test
+        }else if(strcmp(argv[i],"-contour") == 0){// flag "-contour" train and test
             contour(argv[2]);
             exit(1);//terminate program
+        }else if(strcmp(argv[i],"-data") == 0){// flag "-multiple filename1.xml filename2.xml filename3.xml" train and test
+            multiple_mode=true;
+            i++;
+            int j=0;
+            while(1){
+                if(i==argc){
+                    break;
+                }
+                multiple_data_filename[j]=argv[i];
+                i++;
+                j++;
+            }
+            numb_data=j;
         }
+
     }
     // #ifndef ADA_BOOST_H
     // build_boost_classifier( data_filename, filename_to_save, filename_to_load,0.5,false, &accuracy,&value );
-    load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.95,0);
-    if(train_and_test_mode==true){ 
-        filename_to_save="";
-        filename_to_load="-load";
-        // build_boost_classifier( data_filename, filename_to_save, filename_to_load,0.8,true, &accuracy,&value );
-        load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.95,0);
+    if(multiple_mode==true){
+        for(int i=0;i<numb_data;i++){
+            // cout<<"multiple_data_filename[i]:"<<multiple_data_filename[i]<<endl;
+            // cout<<"multiple_filename_to_save[i]:"<<multiple_mode_filename_to_save[i]<<endl;
+            load_and_save_ml(multiple_data_filename[i], multiple_filename_to_save[i], filename_to_load,0.85,0);
+        }
+    }else{
+        load_and_save_ml(data_filename, filename_to_save, filename_to_load,0.85,0);    
     }
+    
+    
     // cout<<"accuracy: "<<accuracy<<endl;
     // cout<<"value: "<<value  <<endl;
 

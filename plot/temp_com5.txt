@@ -1,0 +1,23 @@
+#THis is sample gnuplot
+set title "Comparsion with different CEs"
+set xlabel "k value"
+set ylabel "accuracy"
+set xrange [-1:]
+set yrange [0:1]
+CE10 = 10
+CE15 = 15
+CE20 = 20
+file(i) = sprintf("resource/example%1d.txt",i)
+set output "graph/2_april.out" 
+plot "<(sed -n '2,6p' resource/accuracy10.txt )" using 1:7 smooth unique with lp title 'CE10' linestyle 15,\
+"<(sed -n '9,13p' resource/accuracy10.txt )" using 1:7 smooth unique with lp title 'CE10' linestyle 15,\
+"<(sed -n '16,20p' resource/accuracy10.txt )" using 1:7 smooth unique with lp title 'CE10' linestyle 15,\
+"<(sed -n '2,6p' resource/accuracy15.txt )" using 1:7 smooth unique with lp title 'CE15' linestyle 2,\
+"<(sed -n '9,13p' resource/accuracy15.txt )" using 1:7 smooth unique with lp title 'CE15' linestyle 2,\
+"<(sed -n '16,20p' resource/accuracy15.txt )" using 1:7 smooth unique with lp title 'CE15' linestyle 2,\
+"<(sed -n '2,6p' resource/accuracy20.txt )" using 1:7 smooth unique with lp title 'CE20' linestyle 12,\
+"<(sed -n '9,13p' resource/accuracy20.txt )" using 1:7 smooth unique with lp title 'CE20' linestyle 12,\
+"<(sed -n '16,20p' resource/accuracy20.txt )" using 1:7 smooth unique with lp title 'CE20' linestyle 12
+
+
+save "graph/2_april.ep" 

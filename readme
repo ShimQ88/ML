@@ -18,6 +18,10 @@ Train:
 ./main -save data/resource15.xml -data data/resource15.data
 ./main -save data/resource20.xml -data data/resource20.data
 
+./main -save data/resource10.xml data/resource15.xml data/resource20.xml -data data/resource10.data data/resource15.data data/resource20.data
+
+
+./main -save data/resource10.xml -data data/resource10.data
 
 Test:
 

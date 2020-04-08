@@ -9,7 +9,7 @@ CE15 = 15
 CE20 = 20
 file(i) = sprintf("resource/best_accuracy%1d.txt",i)
 set output "graph/2_april.out" 
-plot file(CE10) using 1:2 smooth unique with lp title 'CE10' linestyle 15,\
-file(CE15) using 1:2 smooth unique with lp title 'CE15' linestyle 2,\
-file(CE20) using 1:2 smooth unique with lp title 'CE20' linestyle 12
+plot file(CE10) using 1:8 smooth unique with lp title 'CE10' linestyle 15,\
+file(CE15) using 1:8 smooth unique with lp title 'CE15' linestyle 2,\
+file(CE20) using 1:8 smooth unique with lp title 'CE20' linestyle 12
 save "graph/2_april.ep" 

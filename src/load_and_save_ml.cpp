@@ -176,15 +176,15 @@ load_and_save_ml( const string& data_filename,
     int remainder=ntrain_samples%ntest_samples;
     ntrain_samples = ntrain_samples-remainder;
 
-    cout<<"ntrain_samples: "<<ntrain_samples<<endl;
-    cout<<"ntest_samples: "<<ntest_samples<<endl;
+    // cout<<"ntrain_samples: "<<ntrain_samples<<endl;
+    // cout<<"ntest_samples: "<<ntest_samples<<endl;
 
-    getchar(); 
+    // getchar(); 
 
 
     //Print Test number of samples    
     help(ntrain_samples,ntest_samples,ml_technique);
-    getchar();
+    // getchar();
     if(ml_technique==0)//the case of neural network
     {
         build_mlp_classifier(data,
