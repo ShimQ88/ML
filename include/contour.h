@@ -44,6 +44,6 @@ SkinTresholding(Mat3b& frame);
 int 
 FindTheLargestContour(std::vector<vector<Point>>contours);
 
-void contour(char* argv);
+void run_contour(char* argv);
 
 #endif //end of CONTOUR_H

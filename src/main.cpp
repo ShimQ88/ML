@@ -1,7 +1,7 @@
 // Project Headers
-#include "load_and_save_ml.h"
+// #include "load_and_save_ml.h"
 #include "gnuplot.h"
-#include "contour.h"
+
 // #include "class.h"
 
 // System Headers
@@ -18,7 +18,15 @@ using namespace std;
 using namespace cv;
 using namespace cv::ml;
 
-void Gnuplot_Generate(){
+extern int run_kuwahara(int argc,char *argv[]);
+extern void run_contour(char* argv);
+extern bool load_and_save_ml( const string& data_filename,
+                      const string& filename_to_save,
+                      const string& filename_to_load,
+                      float percent_of_division,
+                      int ml_technique);
+
+void run_gnuplot(){
     Gnuplot gp;
     ifstream f_plot;
     // f_plot.open ("plot/command.txt");
@@ -90,7 +98,7 @@ int main(int argc, char *argv[]){
             i++;
             filename_to_load = argv[i];
         }else if(strcmp(argv[i],"-contour") == 0){// flag "-contour" train and test
-            contour(argv[2]);
+            run_contour(argv[2]);
             exit(1);//terminate program
         }else if(strcmp(argv[i],"-data") == 0){// flag "-multiple filename1.xml filename2.xml filename3.xml" train and test
             multiple_mode=true;
@@ -105,6 +113,9 @@ int main(int argc, char *argv[]){
                 j++;
             }
             numb_data=j;
+        }else if(strcmp(argv[i],"-detect") == 0){
+            run_kuwahara(argc,argv);
+            exit(1);
         }
 
     }
@@ -124,7 +135,7 @@ int main(int argc, char *argv[]){
     // cout<<"accuracy: "<<accuracy<<endl;
     // cout<<"value: "<<value  <<endl;
 
-    Gnuplot_Generate();
+    run_gnuplot();
 
     // build_boost_classifier(data_filename, filename_to_save, filename_to_load, 0.7, true );
     // build_random_forest_classifier( data_filename, filename_to_save, filename_to_load );

@@ -16,7 +16,7 @@ bool Split_train_test_data(Mat *train_data, Mat *test_data, Mat *train_responses
             test_responses_int->at<float>(i_test,0)=cls_label;
         }else{//test part                
             train_responses->at<float>(i_train, cls_label) = 1.f;
-            train_responses_int->at<float>(i_train,0)=cls_label;
+            train_responses_int->at<float>(i_train,0)=cls_label; 
         }
         for(int j=0;j<the_number_of_data;j++){
 

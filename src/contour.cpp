@@ -66,7 +66,7 @@ int FindTheLargestContour(std::vector<vector<Point>>contours){
 	}
 	return largestcontour;
 }
-void contour(char* argv) {
+void run_contour(char* argv) {
 
 	cout<<"training mode"<<endl;
 		
