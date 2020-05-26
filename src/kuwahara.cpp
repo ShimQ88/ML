@@ -40,6 +40,143 @@ static void on_high_V_thresh_trackbar(int, void *)
 
 
 
+int blob(Mat image2, Mat image3){
+
+	int counterColour=0;
+
+	vector< tuple<int, int> > SET[image2.cols];
+	
+	int A[image2.cols][image2.rows];
+
+	
+	int s1,s2;
+
+	for(int x=0; x<image2.cols;x++){
+		for(int y=0; y<image2.rows;y++){
+			A[x][y]=-1;
+		}
+	}
+
+	cout<<"hello"<<endl;
+
+	int i=0;
+	int index=0, counter=-1;
+	bool is_s1_in=false;
+	for(int y=1; y<image2.rows;y++){	
+		for(int x=1; x<image2.cols;x++){
+			// cout<<"counter: "<<counter<<endl;
+
+			if(Mpixel(image2,x,y)!=0){
+				if((Mpixel(image2,x-1,y)!=0)||(Mpixel(image2,x,y-1)!=0)){
+					s1=A[x-1][y];
+					s2=A[x][y-1];
+					if(s1!=-1){
+						SET[s1].push_back(make_tuple(x,y));
+						
+						A[x][y]=s1;
+						is_s1_in=true;
+					}
+					if(s2!=-1){
+						SET[s2].push_back(make_tuple(x,y));
+						A[x][y]=s2;
+						is_s1_in=false;
+
+					}
+					if((s1!=s2)&&(s1!=-1)&&(s2!=-1)){
+						SET[s1].insert(SET[s1].end(),SET[s2].begin(),SET[s2].end());						
+						for (int j = 0; j < SET[s2].size(); j++ ){
+							A[get<0>(SET[s2][j])][get<1>(SET[s2][j])]=s1;
+						}				
+						SET[s2].clear();
+					}
+					is_s1_in=false;
+
+				}else{
+					counter++;
+					SET[counter].push_back(make_tuple(x,y));
+					A[x][y]=counter;
+				}
+
+			}
+			// cout<<(int)Mpixel(image2,x,y)<<endl;
+		}
+
+	}
+
+	//colour counting
+	// for(int i=0;i<image2.cols;i++){
+	// 	colour_count(SET[i]);
+	// }
+
+	//put random colour to image3
+	counter++;
+	Point p1_rec[counter];
+	Point p2_rec[counter];
+
+	for(int i=0;i<counter;i++){
+		p1_rec[i].x=9999;
+		p1_rec[i].y=9999;
+
+		p2_rec[i].x=-9999;
+		p2_rec[i].y=-9999;
+	}
+	
+
+
+	int rand_numb1 = rand() % 100; 
+	int rand_numb2 = rand() % 100; 
+	int rand_numb3 = rand() % 100; 
+	for(int y=0; y<image3.rows;y++){
+		for(int x=0; x<image3.cols;x++){
+			if(y==0){
+				if(SET[x].empty()==true){
+
+				}else{
+					counterColour++;
+				}
+				// colour_count(SET[x]);
+			}
+			if(A[x][y]==-1){
+				pixelB(image3,x,y)=0;
+				pixelG(image3,x,y)=0;
+				pixelR(image3,x,y)=0;	
+			}
+			if(A[x][y]!=-1){	
+				pixelB(image3,x,y)=(A[x][y]+1)*rand_numb1;
+				pixelG(image3,x,y)=(A[x][y]+1)*rand_numb2;
+				pixelR(image3,x,y)=(A[x][y]+1)*rand_numb3;
+
+				if(x < p1_rec[ (A[x][y]) ].x){
+					p1_rec[ (A[x][y]) ].x=x;
+				}
+
+				if(y < p1_rec[ (A[x][y]) ].y){
+					p1_rec[ (A[x][y]) ].y=y;
+				}
+
+
+				if(x > p2_rec[ (A[x][y]) ].x){
+					p2_rec[ (A[x][y]) ].x=x;
+				}
+
+				if(y > p2_rec[ (A[x][y]) ].y){
+					p2_rec[ (A[x][y]) ].y=y;
+				}
+
+			}
+		}
+	}
+	for(int i=0;i<counter;i++){
+		if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
+			Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x, p2_rec[i].y-p1_rec[i].y);
+			rectangle(image3,rec,Scalar(0,255,0),1);
+		}
+	}
+	// getchar();
+
+	return counterColour;
+}
+
 void Grey_to_Color(Mat3b source_image, Mat filtered_image,Mat3b output_image){
 	for(int x=0; x<source_image.cols;x++){
 		for(int y=0; y<source_image.rows;y++){
@@ -1386,10 +1523,42 @@ int run_kuwahara(int argc,char *argv[]){
 		for(unsigned int i=0; i<glob_result.gl_pathc-1; ++i){
 		// for(unsigned int i=0; i<1; ++i){
 		  	cout << glob_result.gl_pathv[i] << endl;
+		  	cout << glob_result.gl_pathv[i+1] << endl;
+
+		  	/////////////////////////skip if the the number is in the raw
+		  	string s1=glob_result.gl_pathv[i];
+
+		  	
+		  	string t=s1.substr(s1.size()-8,4);
+		  	int prev_img_numb=stoi(t);
+
+		  	string s2=glob_result.gl_pathv[i+1];
+		  	string t2=s2.substr(s2.size()-8,4);
+
+
+		  	int cur_img_numb=stoi(t2);
+
+
+		  	// if(cur_img_numb!=598){continue;}
+
+		  	int tr=cur_img_numb-prev_img_numb;
+		  	cout<<prev_img_numb<<endl;
+		  	cout<<cur_img_numb<<endl;
+		  	if(tr!=1){
+		  		continue;
+		  	}
+		  	
+
+
+		  	////////////////////////
+
+
+		  	getchar();
 		  	Mat3b image1;
 	        Mat gray_image1;
 		   	
 		   	image1=imread(glob_result.gl_pathv[i],1);
+		   	resize(image1, image1, cv::Size(), 0.5, 0.5);
 		   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
 			cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
 			
@@ -1399,6 +1568,7 @@ int run_kuwahara(int argc,char *argv[]){
 	   		Mat3b image2;
 	   		Mat gray_image2;
 	   		image2=imread(glob_result.gl_pathv[i+1],1);
+	   		resize(image2, image2, cv::Size(), 0.5, 0.5);
 	   		if(!image2.data){printf("Could not open the file\n"); exit(0);}
 	   		cvtColor(image2,gray_image2, COLOR_BGR2GRAY);//color image2 to gray scale
 
@@ -1426,10 +1596,10 @@ int run_kuwahara(int argc,char *argv[]){
 			output1=Mat::zeros(gray_image1.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
 			output2=Mat::zeros(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
 
-    		Integral_Gray_Initialize(gray_image2,integral_image2,squared_integral_image2);//create summed-table to integral_image array.
-    		Kuwahara_Filter_Gray_With_Sum_Table(gray_image2,output2,integral_image2,squared_integral_image2,11);//Applying kuwahara filter to output using integral_image.
-    		Integral_Gray_Initialize(gray_image1,integral_image1,squared_integral_image1);//create summed-table to integral_image array.
-    		Kuwahara_Filter_Gray_With_Sum_Table(gray_image1,output1,integral_image1,squared_integral_image1,11);//Applying kuwahara filter to output using integral_image.
+    		// Integral_Gray_Initialize(gray_image2,integral_image2,squared_integral_image2);//create summed-table to integral_image array.
+    		// Kuwahara_Filter_Gray_With_Sum_Table(gray_image2,output2,integral_image2,squared_integral_image2,23);//Applying kuwahara filter to output using integral_image.
+    		// Integral_Gray_Initialize(gray_image1,integral_image1,squared_integral_image1);//create summed-table to integral_image array.
+    		// Kuwahara_Filter_Gray_With_Sum_Table(gray_image1,output1,integral_image1,squared_integral_image1,23);//Applying kuwahara filter to output using integral_image.
 			
 			/*Memory deallocation*/
 			for(int i = 0; i < gray_image1.cols+1; ++i) {
@@ -1448,13 +1618,31 @@ int run_kuwahara(int argc,char *argv[]){
 			Mat output;
 			output=gray_image1-gray_image2;
 
+			for(int x=0; x<output.cols;x++){
+				for(int y=0; y<output.rows;y++){
+					if(Mpixel(output,x,y)>=30){//50 is good //40 is bolt
+						Mpixel(output,x,y)=255;
+					}else{
+						Mpixel(output,x,y)=0;
+					}
+				}
+			}
+			median_filter(output,output,5);
+
 			/***Cropping Object by outline of object***/
 			Mat temp_window=Mat::zeros(image2.size(),IMREAD_GRAYSCALE);//gray case
-			Image_stitching(gray_image2,output,temp_window);
+			// Image_stitching(gray_image2,output,temp_window);
 
+
+			Mat blob_window=Mat::zeros(image2.size(),CV_8UC3);
+			
+			int count_numb=blob(output,blob_window);
+			cout<<"count_numb:"<<count_numb<<endl;
 			imshow("output", output);
-			key=waitKey(1);
+			imshow("blob_window", blob_window);
+			key=waitKey(10000);
 			if(key==113 || key==27) return 0;//either esc or 'q'
+			cout<<"loop Done"<<endl;
 			
 		}
 
