@@ -38,9 +38,34 @@ static void on_high_V_thresh_trackbar(int, void *)
     setTrackbarPos("High V", window_detection_name, high_V);
 }
 
+bool function1(string prev_name, string cur_name){
+	string str_prev_name=prev_name.substr(prev_name.size()-8,4);
+	string str_cur_name=cur_name.substr(cur_name.size()-8,4);
+	int prev_img_numb=stoi(str_prev_name);
+	int cur_img_numb=stoi(str_cur_name);
+	int diff_numb=cur_img_numb-prev_img_numb;
+	
+	if(diff_numb==1){
+		return true;
+	}else{
+		return false;
+	}
 
+}
 
-int blob(Mat image2, Mat image3){
+void thresholding_image(Mat image, int value){
+	for(int x=0; x<image.cols;x++){
+		for(int y=0; y<image.rows;y++){
+			if(Mpixel(image,x,y)>=value){
+				Mpixel(image,x,y)=255;
+			}else{
+				Mpixel(image,x,y)=0;
+			}
+		}
+	}
+}
+
+int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 
 	int counterColour=0;
 
@@ -56,8 +81,6 @@ int blob(Mat image2, Mat image3){
 			A[x][y]=-1;
 		}
 	}
-
-	cout<<"hello"<<endl;
 
 	int i=0;
 	int index=0, counter=-1;
@@ -109,9 +132,16 @@ int blob(Mat image2, Mat image3){
 	// }
 
 	//put random colour to image3
+	
 	counter++;
-	Point p1_rec[counter];
-	Point p2_rec[counter];
+	
+	
+
+	// Point p1_rec[counter];
+	// Point p2_rec[counter];
+
+	p1_rec= new Point[counter];
+	p2_rec= new Point[counter];
 
 	for(int i=0;i<counter;i++){
 		p1_rec[i].x=9999;
@@ -125,7 +155,8 @@ int blob(Mat image2, Mat image3){
 
 	int rand_numb1 = rand() % 100; 
 	int rand_numb2 = rand() % 100; 
-	int rand_numb3 = rand() % 100; 
+	int rand_numb3 = rand() % 100;
+
 	for(int y=0; y<image3.rows;y++){
 		for(int x=0; x<image3.cols;x++){
 			if(y==0){
@@ -166,13 +197,18 @@ int blob(Mat image2, Mat image3){
 			}
 		}
 	}
+
 	for(int i=0;i<counter;i++){
 		if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
-			Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x, p2_rec[i].y-p1_rec[i].y);
+			Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x+1, p2_rec[i].y-p1_rec[i].y+1);
 			rectangle(image3,rec,Scalar(0,255,0),1);
 		}
 	}
 	// getchar();
+	// for(int i=0;i<20;i++){
+	// 	cout<<p1_rec->x<<endl;
+	// }
+
 
 	return counterColour;
 }
@@ -1525,26 +1561,8 @@ int run_kuwahara(int argc,char *argv[]){
 		  	cout << glob_result.gl_pathv[i] << endl;
 		  	cout << glob_result.gl_pathv[i+1] << endl;
 
-		  	/////////////////////////skip if the the number is in the raw
-		  	string s1=glob_result.gl_pathv[i];
-
-		  	
-		  	string t=s1.substr(s1.size()-8,4);
-		  	int prev_img_numb=stoi(t);
-
-		  	string s2=glob_result.gl_pathv[i+1];
-		  	string t2=s2.substr(s2.size()-8,4);
-
-
-		  	int cur_img_numb=stoi(t2);
-
-
-		  	// if(cur_img_numb!=598){continue;}
-
-		  	int tr=cur_img_numb-prev_img_numb;
-		  	cout<<prev_img_numb<<endl;
-		  	cout<<cur_img_numb<<endl;
-		  	if(tr!=1){
+		  	bool is_check_name=function1(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
+		  	if(is_check_name==false){
 		  		continue;
 		  	}
 		  	
@@ -1618,15 +1636,6 @@ int run_kuwahara(int argc,char *argv[]){
 			Mat output;
 			output=gray_image1-gray_image2;
 
-			for(int x=0; x<output.cols;x++){
-				for(int y=0; y<output.rows;y++){
-					if(Mpixel(output,x,y)>=30){//50 is good //40 is bolt
-						Mpixel(output,x,y)=255;
-					}else{
-						Mpixel(output,x,y)=0;
-					}
-				}
-			}
 			median_filter(output,output,5);
 
 			/***Cropping Object by outline of object***/
@@ -1635,8 +1644,21 @@ int run_kuwahara(int argc,char *argv[]){
 
 
 			Mat blob_window=Mat::zeros(image2.size(),CV_8UC3);
-			
-			int count_numb=blob(output,blob_window);
+
+			thresholding_image(output, 35);
+			Point *p1,*p2;
+
+			// p1=new Point[200];
+			// p2=new Point[200];
+			int count_numb=blob(output,blob_window,p1,p2);
+
+			// for(int i=0;i<20;i++){
+			// 	cout<<p1->x<<endl;
+			// }
+
+
+			std::cout << "Length of array = " << sizeof(p1)/sizeof(Point) << std::endl;
+
 			cout<<"count_numb:"<<count_numb<<endl;
 			imshow("output", output);
 			imshow("blob_window", blob_window);

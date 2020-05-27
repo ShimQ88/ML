@@ -26,8 +26,11 @@ using namespace chrono;
 #define pixelG(image,x,y) image.data[image.step[0]*y+image.step[1]*x+1]	//Green color space
 #define pixelR(image,x,y) image.data[image.step[0]*y+image.step[1]*x+2]	//Red color space
 
+void thresholding_image(Mat image, int value);
 
-int blob(Mat image2, Mat image3);
+bool function1(string prev_name, string cur_name);
+
+int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec);
 
 void Grey_to_Color(Mat3b source_image, Mat filtered_image,Mat3b output_image);
 
