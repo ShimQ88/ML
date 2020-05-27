@@ -28,9 +28,9 @@ using namespace chrono;
 
 void thresholding_image(Mat image, int value);
 
-bool function1(string prev_name, string cur_name);
+bool check_numb_in_a_row(string prev_name, string cur_name);
 
-void draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number);
+Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number);
 
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec);
 

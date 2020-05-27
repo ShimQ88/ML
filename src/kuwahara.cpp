@@ -38,7 +38,42 @@ static void on_high_V_thresh_trackbar(int, void *)
     setTrackbarPos("High V", window_detection_name, high_V);
 }
 
-bool function1(string prev_name, string cur_name){
+int threshold_value = 0;
+int threshold_type = 3;
+// int const max_value = 255;
+int const max_type = 4;
+int const max_binary_value = 255;
+Mat src, src_gray, dst;
+const char* window_name = "Threshold Demo";
+const char* trackbar_type = "Type: \n 0: Binary \n 1: Binary Inverted \n 2: Truncate \n 3: To Zero \n 4: To Zero Inverted";
+const char* trackbar_value = "Value";
+
+
+static void Threshold_Demo( int, void* )
+{
+    /* 0: Binary
+     1: Binary Inverted
+     2: Threshold Truncated
+     3: Threshold to Zero
+     4: Threshold to Zero Inverted
+    */
+    threshold( src_gray, dst, threshold_value, max_binary_value, threshold_type );
+    imshow( window_name, dst );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool check_numb_in_a_row(string prev_name, string cur_name){
 	string str_prev_name=prev_name.substr(prev_name.size()-8,4);
 	string str_cur_name=cur_name.substr(cur_name.size()-8,4);
 	int prev_img_numb=stoi(str_prev_name);
@@ -65,13 +100,26 @@ void thresholding_image(Mat image, int value){
 	}
 }
 
-void draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
+Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
+	int big_blob_i = -1;
+	int big_blob_len = -9999;
 	for(int i=0;i<loop_number;i++){
 		if((p1[i].x!=9999)&&(p1[i].y!=9999)&&(p2[i].x!=-9999)&&(p2[i].y!=-9999)){
-			Rect rec(p1[i].x-2, p1[i].y-2, p2[i].x-p1[i].x+2, p2[i].y-p1[i].y+2);
-			rectangle(input_image,rec,Scalar(0,255,0),2);
+			int temp_value = abs( (p2[i].x-p1[i].x)*(p2[i].y-p1[i].y) );
+			if(big_blob_len < temp_value){
+				big_blob_len= temp_value;
+				big_blob_i = i;
+			}
 		}
 	}
+	Rect rec(p1[big_blob_i].x-2, p1[big_blob_i].y-2, p2[big_blob_i].x-p1[big_blob_i].x+2, p2[big_blob_i].y-p1[big_blob_i].y+2);
+	
+	Point center_of_rect = (rec.br() + rec.tl())*0.5;
+
+    circle(input_image,center_of_rect,3,Scalar(0,0,255));
+	rectangle(input_image,rec,Scalar(0,255,0),2);
+
+	return center_of_rect;
 }
 
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
@@ -90,13 +138,13 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 			A[x][y]=-1;
 		}
 	}
-
+	cout<<"P1"<<endl;
 	int i=0;
 	int index=0, counter=-1;
 	bool is_s1_in=false;
-	for(int y=1; y<image2.rows;y++){	
+	// for(int y=1; y<image2.rows;y++){
+	for(int y=image2.rows/50; y<image2.rows;y++){//Ignoring the numbers from top section
 		for(int x=1; x<image2.cols;x++){
-			// cout<<"counter: "<<counter<<endl;
 
 			if(Mpixel(image2,x,y)!=0){
 				if((Mpixel(image2,x-1,y)!=0)||(Mpixel(image2,x,y-1)!=0)){
@@ -130,11 +178,13 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 				}
 
 			}
-			// cout<<(int)Mpixel(image2,x,y)<<endl;
+			if(counter>1000){return -100;}//This is using for avoiding segmental fault.
 		}
+
 
 	}
 
+	cout<<"P2"<<endl;
 	//colour counting
 	// for(int i=0;i<image2.cols;i++){
 	// 	colour_count(SET[i]);
@@ -160,13 +210,13 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 		p2_rec[i].y=-9999;
 	}
 	
-
+	cout<<"P3"<<endl;
 
 	int rand_numb1 = rand() % 100; 
 	int rand_numb2 = rand() % 100; 
 	int rand_numb3 = rand() % 100;
 
-	for(int y=0; y<image3.rows;y++){
+	for(int y=image2.rows/50; y<image2.rows;y++){//Ignoring the numbers from top section
 		for(int x=0; x<image3.cols;x++){
 			if(y==0){
 				if(SET[x].empty()==true){
@@ -207,7 +257,7 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 		}
 	}
 	draw_rect_box(image3, p1_rec, p2_rec, counter);
-
+	cout<<"P4"<<endl;
 	// for(int i=0;i<counter;i++){
 	// 	if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
 	// 		Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x+1, p2_rec[i].y-p1_rec[i].y+1);
@@ -1565,14 +1615,15 @@ int run_kuwahara(int argc,char *argv[]){
 		glob_t glob_result;
 		glob(path,GLOB_TILDE,NULL,&glob_result);
 		// glob(argv[2],GLOB_TILDE,NULL,&glob_result);
-		int key;
+		int key=0;
 		for(unsigned int i=0; i<glob_result.gl_pathc-1; ++i){
 		// for(unsigned int i=0; i<1; ++i){
 		  	cout << glob_result.gl_pathv[i] << endl;
 		  	cout << glob_result.gl_pathv[i+1] << endl;
 
-		  	bool is_check_name=function1(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
-		  	if(is_check_name==false){
+		  	bool is_the_end_numb_in_a_row=check_numb_in_a_row(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
+		  	
+		  	if(is_the_end_numb_in_a_row==false){
 		  		continue;
 		  	}
 		  	
@@ -1616,15 +1667,17 @@ int run_kuwahara(int argc,char *argv[]){
 			}
     		/*********************/	
 
-			Mat output1,output2;
+			Mat filtered_image1,filtered_image2;
 
-			output1=Mat::zeros(gray_image1.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-			output2=Mat::zeros(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
+			filtered_image1=Mat::zeros(gray_image1.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
+			filtered_image2=Mat::zeros(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
 
-    		// Integral_Gray_Initialize(gray_image2,integral_image2,squared_integral_image2);//create summed-table to integral_image array.
-    		// Kuwahara_Filter_Gray_With_Sum_Table(gray_image2,output2,integral_image2,squared_integral_image2,23);//Applying kuwahara filter to output using integral_image.
-    		// Integral_Gray_Initialize(gray_image1,integral_image1,squared_integral_image1);//create summed-table to integral_image array.
-    		// Kuwahara_Filter_Gray_With_Sum_Table(gray_image1,output1,integral_image1,squared_integral_image1,23);//Applying kuwahara filter to output using integral_image.
+			Integral_Gray_Initialize(gray_image1,integral_image1,squared_integral_image1);//create summed-table to integral_image array.
+    		Kuwahara_Filter_Gray_With_Sum_Table(gray_image1,filtered_image1,integral_image1,squared_integral_image1,5);//Applying kuwahara filter to output using integral_image.
+
+    		Integral_Gray_Initialize(gray_image2,integral_image2,squared_integral_image2);//create summed-table to integral_image array.
+    		Kuwahara_Filter_Gray_With_Sum_Table(gray_image2,filtered_image2,integral_image2,squared_integral_image2,5);//Applying kuwahara filter to output using integral_image.
+    		
 			
 			/*Memory deallocation*/
 			for(int i = 0; i < gray_image1.cols+1; ++i) {
@@ -1640,10 +1693,13 @@ int run_kuwahara(int argc,char *argv[]){
 			delete [] squared_integral_image2;
 			/***************/
 			/*subtraction process between The first image and the second image*/
-			Mat output;
-			output=gray_image1-gray_image2;
+			Mat output1,output2;
+			// output=gray_image1-gray_image2;
+			// output=output1-output2;
+			output1=filtered_image1-filtered_image2;
+			output2=filtered_image2-filtered_image1;
 
-			median_filter(output,output,5);
+			median_filter(output1,output1,5);
 
 			/***Cropping Object by outline of object***/
 			Mat temp_window=Mat::zeros(image2.size(),IMREAD_GRAYSCALE);//gray case
@@ -1652,32 +1708,43 @@ int run_kuwahara(int argc,char *argv[]){
 
 			Mat blob_window=Mat::zeros(image2.size(),CV_8UC3);
 
-			thresholding_image(output, 35);
+			thresholding_image(output1, 35);
 			Point *p1,*p2;
 			p1=new Point[200];//approx numb
 			p2=new Point[200];//approx numb
 
 			// p1=new Point[200];
 			// p2=new Point[200];
-			int count_numb=blob(output,blob_window,p1,p2);
+			int count_numb=blob(output1,blob_window,p1,p2);
+			if(count_numb==-100){continue;}//segmental fault
+			// int count_numb=blob(output2,blob_window,p1,p2);
+			
+			
+			src_gray=gray_image2;
+			src=image2;
+			
+			namedWindow( window_name, WINDOW_AUTOSIZE ); // Create a window to display results
+		    createTrackbar( trackbar_type,
+		                    window_name, &threshold_type,
+		                    max_type, Threshold_Demo ); // Create a Trackbar to choose type of Threshold
+		    createTrackbar( trackbar_value,
+		                    window_name, &threshold_value,
+		                    max_value, Threshold_Demo ); // Create a Trackbar to choose Threshold value
+		    Threshold_Demo( 0, 0 ); // Call the function to initialize
 
-			draw_rect_box(image2, p1, p2, 200);
-			// for(int i=0;i<20;i++){
-			// 	cout<<p1->x<<endl;
-			// }
-
-
-			std::cout << "Length of array = " << sizeof(p1)/sizeof(Point) << std::endl;
-
+			// thresholding_image(gray_image2, 120);
+			Point center_of_object=draw_rect_box(src_gray, p1, p2, 200);
+			// draw_rect_box(image2, p1, p2, 200);
+			
 			cout<<"count_numb:"<<count_numb<<endl;
-
 			
 
-			imshow("output", output);
-			imshow("image2", image2);
+			// imshow("output", output);
+			imshow("gray_image1", gray_image2);
+			imshow("output1", output1);
 			imshow("blob_window", blob_window);
-			key=waitKey(10000);
-			if(key==113 || key==27) return 0;//either esc or 'q'
+			key=waitKey(0);
+			if(key==113 || key==27) exit(1);//either esc or 'q'
 			cout<<"loop Done"<<endl;
 			
 			delete p1;
