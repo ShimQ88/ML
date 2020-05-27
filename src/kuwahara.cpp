@@ -65,6 +65,15 @@ void thresholding_image(Mat image, int value){
 	}
 }
 
+void draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
+	for(int i=0;i<loop_number;i++){
+		if((p1[i].x!=9999)&&(p1[i].y!=9999)&&(p2[i].x!=-9999)&&(p2[i].y!=-9999)){
+			Rect rec(p1[i].x-2, p1[i].y-2, p2[i].x-p1[i].x+2, p2[i].y-p1[i].y+2);
+			rectangle(input_image,rec,Scalar(0,255,0),2);
+		}
+	}
+}
+
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 
 	int counterColour=0;
@@ -140,8 +149,8 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 	// Point p1_rec[counter];
 	// Point p2_rec[counter];
 
-	p1_rec= new Point[counter];
-	p2_rec= new Point[counter];
+	// p1_rec= new Point[counter];
+	// p2_rec= new Point[counter];
 
 	for(int i=0;i<counter;i++){
 		p1_rec[i].x=9999;
@@ -197,13 +206,14 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 			}
 		}
 	}
+	draw_rect_box(image3, p1_rec, p2_rec, counter);
 
-	for(int i=0;i<counter;i++){
-		if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
-			Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x+1, p2_rec[i].y-p1_rec[i].y+1);
-			rectangle(image3,rec,Scalar(0,255,0),1);
-		}
-	}
+	// for(int i=0;i<counter;i++){
+	// 	if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
+	// 		Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x+1, p2_rec[i].y-p1_rec[i].y+1);
+	// 		rectangle(image3,rec,Scalar(0,255,0),1);
+	// 	}
+	// }
 	// getchar();
 	// for(int i=0;i<20;i++){
 	// 	cout<<p1_rec->x<<endl;
@@ -1569,9 +1579,6 @@ int run_kuwahara(int argc,char *argv[]){
 
 
 		  	////////////////////////
-
-
-		  	getchar();
 		  	Mat3b image1;
 	        Mat gray_image1;
 		   	
@@ -1647,11 +1654,14 @@ int run_kuwahara(int argc,char *argv[]){
 
 			thresholding_image(output, 35);
 			Point *p1,*p2;
+			p1=new Point[200];//approx numb
+			p2=new Point[200];//approx numb
 
 			// p1=new Point[200];
 			// p2=new Point[200];
 			int count_numb=blob(output,blob_window,p1,p2);
 
+			draw_rect_box(image2, p1, p2, 200);
 			// for(int i=0;i<20;i++){
 			// 	cout<<p1->x<<endl;
 			// }
@@ -1660,12 +1670,18 @@ int run_kuwahara(int argc,char *argv[]){
 			std::cout << "Length of array = " << sizeof(p1)/sizeof(Point) << std::endl;
 
 			cout<<"count_numb:"<<count_numb<<endl;
+
+			
+
 			imshow("output", output);
+			imshow("image2", image2);
 			imshow("blob_window", blob_window);
 			key=waitKey(10000);
 			if(key==113 || key==27) return 0;//either esc or 'q'
 			cout<<"loop Done"<<endl;
 			
+			delete p1;
+			delete p2;
 		}
 
 

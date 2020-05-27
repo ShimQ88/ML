@@ -30,6 +30,8 @@ void thresholding_image(Mat image, int value);
 
 bool function1(string prev_name, string cur_name);
 
+void draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number);
+
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec);
 
 void Grey_to_Color(Mat3b source_image, Mat filtered_image,Mat3b output_image);
