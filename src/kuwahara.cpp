@@ -1,4 +1,5 @@
 #include "kuwahara.h"
+#include "contour.h"
 
 const int max_value_H = 360/2;
 const int max_value = 255;
@@ -61,15 +62,34 @@ static void Threshold_Demo( int, void* )
     imshow( window_name, dst );
 }
 
+Mat Cropping_ROI(Mat imput_image,Point center_of_object, int kernel_size){
+	Point temp_p;
+	temp_p.x=center_of_object.x-(kernel_size/2);
+	temp_p.y=center_of_object.y-(kernel_size/2);
+	
+
+	if(temp_p.x<0){
+		temp_p.x=0;
+	}
+
+	if(temp_p.y<0){
+		temp_p.y=0;	
+	}
+
+	if(temp_p.x+kernel_size>imput_image.cols){
+		temp_p.x=imput_image.cols-kernel_size;
+	}
+
+	if(temp_p.y+kernel_size>imput_image.rows){
+		temp_p.y=imput_image.rows-kernel_size;	
+	}
+	cout<<"temp_p.x:"<<temp_p.x<<endl;
+	cout<<"temp_p.y:"<<temp_p.y<<endl;
 
 
-
-
-
-
-
-
-
+	Mat ROI=imput_image(Rect(temp_p.x,temp_p.y,kernel_size,kernel_size)).clone();
+	return ROI;
+}
 
 
 
@@ -122,6 +142,8 @@ Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
 	return center_of_rect;
 }
 
+
+
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 
 	int counterColour=0;
@@ -138,14 +160,14 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 			A[x][y]=-1;
 		}
 	}
-	cout<<"P1"<<endl;
+	// cout<<"P1"<<endl;
 	int i=0;
 	int index=0, counter=-1;
 	bool is_s1_in=false;
 	// for(int y=1; y<image2.rows;y++){
 	for(int y=image2.rows/50; y<image2.rows;y++){//Ignoring the numbers from top section
 		for(int x=1; x<image2.cols;x++){
-
+			// cout<<"counter: "<<counter<<endl;
 			if(Mpixel(image2,x,y)!=0){
 				if((Mpixel(image2,x-1,y)!=0)||(Mpixel(image2,x,y-1)!=0)){
 					s1=A[x-1][y];
@@ -178,13 +200,13 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 				}
 
 			}
-			if(counter>1000){return -100;}//This is using for avoiding segmental fault.
+			if(counter>150){return -100;}//This is using for avoiding segmental fault.
 		}
 
 
 	}
 
-	cout<<"P2"<<endl;
+	// cout<<"P2"<<endl;
 	//colour counting
 	// for(int i=0;i<image2.cols;i++){
 	// 	colour_count(SET[i]);
@@ -210,7 +232,7 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 		p2_rec[i].y=-9999;
 	}
 	
-	cout<<"P3"<<endl;
+	// cout<<"P3"<<endl;
 
 	int rand_numb1 = rand() % 100; 
 	int rand_numb2 = rand() % 100; 
@@ -257,7 +279,7 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 		}
 	}
 	draw_rect_box(image3, p1_rec, p2_rec, counter);
-	cout<<"P4"<<endl;
+	// cout<<"P4"<<endl;
 	// for(int i=0;i<counter;i++){
 	// 	if((p1_rec[i].x!=9999)&&(p1_rec[i].y!=9999)&&(p2_rec[i].x!=-9999)&&(p2_rec[i].y!=-9999)){
 	// 		Rect rec(p1_rec[i].x, p1_rec[i].y, p2_rec[i].x-p1_rec[i].x+1, p2_rec[i].y-p1_rec[i].y+1);
@@ -270,7 +292,8 @@ int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec){
 	// }
 
 
-	return counterColour;
+	// return counterColour;
+	return counter;
 }
 
 void Grey_to_Color(Mat3b source_image, Mat filtered_image,Mat3b output_image){
@@ -1699,6 +1722,9 @@ int run_kuwahara(int argc,char *argv[]){
 			output1=filtered_image1-filtered_image2;
 			output2=filtered_image2-filtered_image1;
 
+			
+
+
 			median_filter(output1,output1,5);
 
 			/***Cropping Object by outline of object***/
@@ -1713,39 +1739,95 @@ int run_kuwahara(int argc,char *argv[]){
 			p1=new Point[200];//approx numb
 			p2=new Point[200];//approx numb
 
+			// Point p1[200],p2[200];
+
 			// p1=new Point[200];
 			// p2=new Point[200];
 			int count_numb=blob(output1,blob_window,p1,p2);
-			if(count_numb==-100){continue;}//segmental fault
+			if(count_numb==-100){
+				cout<<"Skip: too much blob"<<endl;
+				continue;
+			}//segmental fault
 			// int count_numb=blob(output2,blob_window,p1,p2);
 			
 			
-			src_gray=gray_image2;
-			src=image2;
-			
-			namedWindow( window_name, WINDOW_AUTOSIZE ); // Create a window to display results
-		    createTrackbar( trackbar_type,
-		                    window_name, &threshold_type,
-		                    max_type, Threshold_Demo ); // Create a Trackbar to choose type of Threshold
-		    createTrackbar( trackbar_value,
-		                    window_name, &threshold_value,
-		                    max_value, Threshold_Demo ); // Create a Trackbar to choose Threshold value
-		    Threshold_Demo( 0, 0 ); // Call the function to initialize
-
-			// thresholding_image(gray_image2, 120);
 			Point center_of_object=draw_rect_box(src_gray, p1, p2, 200);
+			Mat ROI=Cropping_ROI(image2,center_of_object,200);
+
+			// Mat ROI_gray,ROI_hsv;
+			// cvtColor(ROI, ROI_gray, CV_BGR2GRAY);
+   //  		cvtColor(ROI, ROI_hsv, COLOR_BGR2HSV);
+
+   //  		Mat mask1, mask2;
+   //  		inRange(ROI_hsv, Scalar(50, 100, 20), Scalar(100, 255, 255), mask1); //10
+   //  		inRange(ROI_hsv, Scalar(170, 100, 20), Scalar(230, 255, 255), mask2);//180
+
+   //  		Mat mask = mask1 | mask2;
+   //  		imshow("mask", mask);
+   //  		// imshow("ROI_hsv", ROI_hsv);
+   //  		key=waitKey(0);
+   //  		Mat1b kernel = getStructuringElement(MORPH_ELLIPSE, Size(7,7));
+   //  		morphologyEx(mask, mask, MORPH_OPEN, kernel);
+    		
+    		
+			// src_gray=ROI_gray;
+			// src=image2;
+
+
+			// namedWindow( window_name, WINDOW_AUTOSIZE ); // Create a window to display results
+		 //    createTrackbar( trackbar_type,
+		 //                    window_name, &threshold_type,
+		 //                    max_type, Threshold_Demo ); // Create a Trackbar to choose type of Threshold
+		 //    createTrackbar( trackbar_value,
+		 //                    window_name, &threshold_value,
+		 //                    max_value, Threshold_Demo ); // Create a Trackbar to choose Threshold value
+		 //    Threshold_Demo( 0, 0 ); // Call the function to initialize
+
+			// std::vector<vector<Point>>contours;
+			// findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+			// cout<<"1"<<endl;
+			// Mat drawing=Mat::zeros(ROI_gray.size(),CV_8UC3);
+			// cout<<"2"<<endl;
+			// int largestcontour=FindTheLargestContour(contours);
+			// cout<<"3"<<endl;
+			// Scalar color=CV_RGB(255,0,0);
+			// drawContours(drawing,contours,largestcontour,color,2,8);
+			// // imshow("ROI_gray", ROI_gray);
+			// imshow("drawing", drawing);
+			// cout<<"4"<<endl;
+			// vector<float>CE;
+			// EllipticFourierDescriptors(contours[largestcontour],CE);
+
+
+
+
+
+
+
+
+			
+		    
+			// thresholding_image(gray_image2, 120);
+			
 			// draw_rect_box(image2, p1, p2, 200);
 			
 			cout<<"count_numb:"<<count_numb<<endl;
 			
 
 			// imshow("output", output);
+			imshow("ROI", ROI);
 			imshow("gray_image1", gray_image2);
+			cout<<"1"<<endl;
 			imshow("output1", output1);
+			cout<<"2"<<endl;
 			imshow("blob_window", blob_window);
+			cout<<"3"<<endl;
 			key=waitKey(0);
+			// waitKey(1);
+			// cout<<"1"<<endl;
 			if(key==113 || key==27) exit(1);//either esc or 'q'
 			cout<<"loop Done"<<endl;
+
 			
 			delete p1;
 			delete p2;

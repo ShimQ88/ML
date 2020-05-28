@@ -32,6 +32,8 @@ bool check_numb_in_a_row(string prev_name, string cur_name);
 
 Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number);
 
+Mat Cropping_ROI(Mat imput_image,Point center_of_object);
+
 int blob(Mat image2, Mat image3,Point *p1_rec, Point *p2_rec);
 
 void Grey_to_Color(Mat3b source_image, Mat filtered_image,Mat3b output_image);
