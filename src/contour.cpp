@@ -66,6 +66,35 @@ int FindTheLargestContour(std::vector<vector<Point>>contours){
 	}
 	return largestcontour;
 }
+
+int Distance_Between_Points(Point p1, Point p2){
+	int distance_x = (p2.x - p1.x)*(p2.x - p1.x);
+  	int distance_y = (p2.y - p1.y)*(p2.y - p1.y);
+  	return sqrt(distance_x + distance_y);
+}
+
+int Find_The_Object_Contour(std::vector<vector<Point>>contours,Point center_of_object){
+	int g_val=9999;
+	int final_i=-1;
+	for(int i=0;i<contours.size();i++){
+		int l_val=9999;
+		for(int j=0;j<contours[i].size();j++){
+			int distance=Distance_Between_Points(contours[i][j],center_of_object);
+			if(l_val>distance){
+				l_val=distance;
+			}
+	
+		}
+		if(g_val>l_val){
+			g_val=l_val;
+			final_i=i;
+			
+			
+		}
+	}
+	return final_i;
+}
+
 void run_contour(char* argv) {
 
 	cout<<"training mode"<<endl;

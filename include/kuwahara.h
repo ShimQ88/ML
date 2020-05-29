@@ -26,7 +26,7 @@ using namespace chrono;
 #define pixelG(image,x,y) image.data[image.step[0]*y+image.step[1]*x+1]	//Green color space
 #define pixelR(image,x,y) image.data[image.step[0]*y+image.step[1]*x+2]	//Red color space
 
-void thresholding_image(Mat image, int value);
+void thresholding_image(Mat image, int value, bool inverted, int window_size);
 
 bool check_numb_in_a_row(string prev_name, string cur_name);
 
