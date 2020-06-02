@@ -121,10 +121,7 @@ void thresholding_image(Mat image, int value, bool inverted, int window_size){
 		}	
 	}else{
 		for(int x=(window_size/2); x<image.cols-(window_size/2);x++){
-			for(int y=(window_size/2); y<image.rows-(window_size/2);y++){
-				if( (x<window_size/2) || (y<window_size/2) ){
-					Mpixel(image,x,y)=255;
-				}
+			for(int y=(window_size/2); y<image.rows-(window_size/2);y++){				
 				if(Mpixel(image,x,y)>=value){
 					Mpixel(image,x,y)=0;
 				}else{
@@ -132,8 +129,46 @@ void thresholding_image(Mat image, int value, bool inverted, int window_size){
 				}
 			}
 		}
+	}	
+}
+
+
+float binary_histogram(Mat image, int window_size, double histogram[]){
+	for(int i=0;i<256;i++){
+		histogram[i]=0;
 	}
-	
+
+	// for(int x=( (window_size/2)+(image.cols*2/5) ); x<image.cols-( (window_size/2) +(image.cols*2/5));x++){
+	// 	for(int y=((window_size/2) +(image.rows*2/5)); y<image.rows-( (window_size/2) +(image.rows*2/5) );y++){
+	for(int x=(window_size/2); x<image.cols-(window_size/2);x++){
+		for(int y=(window_size/2); y<image.rows-(window_size/2);y++){	
+			int hist_val=(int)Mpixel(image,x,y);
+			histogram[hist_val]++;
+			// Point temp_p;
+			// temp_p.x=x;
+			// temp_p.y=y;
+			// circle(image,temp_p,1,Scalar(255,255,255));
+		}
+	}	
+	float total_sum=0;
+	float total=0;
+	int biggest=-9999;
+	int big_i=-1;
+	for(int i=0;i<256;i++){
+		// if(i>0 && i<51){
+			if(biggest<histogram[i]){
+				biggest=histogram[i];
+				big_i=i;
+			}
+		// }
+		total_sum=total_sum+(histogram[i]*i);
+		total=total+histogram[i];
+		// cout<<i<<": "<<histogram[i]<<endl;
+		// cout<<"total_sum: "<<total_sum<<endl;
+	}
+	// total_sum=total_sum/256;
+	return big_i;
+	// return total_sum/total;
 }
 
 Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
@@ -1796,7 +1831,7 @@ int run_kuwahara(int argc,char *argv[]){
 			kuwahara_ROI=Mat::zeros(ROI_gray.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
 
 			Integral_Gray_Initialize(ROI_gray,ROI_integral_image,ROI_squared_integral_image);//create summed-table to integral_image array.
-    		Kuwahara_Filter_Gray_With_Sum_Table(ROI_gray,kuwahara_ROI,ROI_integral_image,ROI_squared_integral_image,3);//Applying kuwahara filter to output using integral_image.
+    		Kuwahara_Filter_Gray_With_Sum_Table(ROI_gray,kuwahara_ROI,ROI_integral_image,ROI_squared_integral_image,5);//Applying kuwahara filter to output using integral_image.
 
 			/*Memory deallocation*/
 			for(int i = 0; i < ROI_gray.cols+1; ++i) {
@@ -1822,8 +1857,42 @@ int run_kuwahara(int argc,char *argv[]){
 			// cout<<"p1"<<endl;
 			Mat kuwahara_ROI_th;
 			kuwahara_ROI_th=kuwahara_ROI.clone();
-			thresholding_image(kuwahara_ROI_th, 70,false,3);
-			median_filter(kuwahara_ROI_th,kuwahara_ROI_th,5);
+			thresholding_image(kuwahara_ROI_th, 50,false,5);
+			    // Edge detection
+    		Canny(kuwahara_ROI_th, kuwahara_ROI_th, 50, 200, 3);
+			double histogram[256];
+
+			// imshow("kuwahara_ROI_th", kuwahara_ROI_th);
+			// key=waitKey(0);
+			// continue;
+
+
+			// int val=binary_histogram(kuwahara_ROI_th,131, histogram);
+			// if(val>100){
+			// 	val=val-30;	
+			// }else if(val<31){
+			// 	val=val+30;
+			// }
+			// }else if(val>=100&&val<150){
+			// 	val=val-80;
+			// }
+			// else if(val>=150&&val<250){
+			// 	val=val-100;
+			// }
+
+			
+			// cout<<"val:"<<val<<endl;
+			// val=200;
+
+			// thresholding_image(kuwahara_ROI_th, val,false,3);
+			// if(val<150){
+				// thresholding_image(kuwahara_ROI_th, val,false,3);	
+			// }else{
+				// thresholding_image(kuwahara_ROI_th, val,true,3);	
+			// }
+			
+			// median_filter(kuwahara_ROI_th,kuwahara_ROI_th,3);
+
 			std::vector<vector<Point>>contours;
 			// findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 			// cout<<"p2"<<endl;
@@ -1854,7 +1923,7 @@ int run_kuwahara(int argc,char *argv[]){
 			imshow("kuwahara_ROI_th", kuwahara_ROI_th);
 			imshow("kuwahara_ROI", kuwahara_ROI);
 			imshow("drawing", drawing);
-			// key=waitKey(0);
+			key=waitKey(0);
 			// cout<<"p5"<<endl;
 
 
@@ -1863,9 +1932,9 @@ int run_kuwahara(int argc,char *argv[]){
 			string delimiter = ".";
 			string token = s.substr(0, s.find(delimiter)); 
 
-			string path_ROI=saving_directory+token+"_roi.jpg";
+			string path_ROI=saving_directory+token+"_ROI.jpg";
 			string path_contour=saving_directory+token+"_contour.jpg";
-			cout<<"path: "<<path<<endl; 
+			cout<<"path_ROI: "<<path_ROI<<endl; 
 			imwrite( path_ROI, ROI );
 			imwrite( path_contour, drawing );
 
