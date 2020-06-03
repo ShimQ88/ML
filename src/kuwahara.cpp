@@ -108,11 +108,13 @@ bool check_numb_in_a_row(string prev_name, string cur_name){
 
 }
 
+
+
 void thresholding_image(Mat image, int value, bool inverted, int window_size){
 	if(inverted==true){
 		for(int x=(window_size/2); x<image.cols-(window_size/2);x++){
 			for(int y=(window_size/2); y<image.rows-(window_size/2);y++){
-				if(Mpixel(image,x,y)>=value){
+				if((Mpixel(image,x,y)>=value)){
 					Mpixel(image,x,y)=255;
 				}else{
 					Mpixel(image,x,y)=0;
@@ -154,7 +156,7 @@ float binary_histogram(Mat image, int window_size, double histogram[]){
 	float total=0;
 	int biggest=-9999;
 	int big_i=-1;
-	for(int i=0;i<256;i++){
+	for(int i=0;i<100;i++){
 		// if(i>0 && i<51){
 			if(biggest<histogram[i]){
 				biggest=histogram[i];
@@ -167,8 +169,8 @@ float binary_histogram(Mat image, int window_size, double histogram[]){
 		// cout<<"total_sum: "<<total_sum<<endl;
 	}
 	// total_sum=total_sum/256;
-	return big_i;
-	// return total_sum/total;
+	// return big_i;
+	return total_sum/total;
 }
 
 Point draw_rect_box(Mat input_image, Point* p1, Point* p2, int loop_number){
@@ -1814,9 +1816,11 @@ int run_kuwahara(int argc,char *argv[]){
 			
 			Point center_of_object=draw_rect_box(src_gray, p1, p2, 200);
 			Mat ROI=Cropping_ROI(image2,center_of_object,200);
+			Mat ROI_2=Cropping_ROI(image1,center_of_object,200);
 
-			Mat ROI_gray;
+			Mat ROI_gray,ROI_2_gray;
 			cvtColor(ROI, ROI_gray, CV_BGR2GRAY);
+			cvtColor(ROI_2, ROI_2_gray, CV_BGR2GRAY);
 
 			double** ROI_integral_image=new double*[ROI_gray.cols+1];
 			double** ROI_squared_integral_image=new double*[ROI_gray.cols+1];
@@ -1840,6 +1844,27 @@ int run_kuwahara(int argc,char *argv[]){
 			}
 			delete [] ROI_integral_image;
 			delete [] ROI_squared_integral_image;
+			// while(true){
+
+			// namedWindow(window_capture_name);
+   //  		namedWindow(window_detection_name);
+	  //   	// Trackbars to set thresholds for HSV values
+	  //   	createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
+	  //   	createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
+	  //   	createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
+	  //   	createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
+	  //   	createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
+	  //   	createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
+
+			// Mat ROI_hsv;
+			// Mat frame, frame_HSV, frame_threshold;
+			// cvtColor(ROI, ROI_hsv, CV_BGR2HSV);
+			// frame_HSV=ROI_hsv;
+			// inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
+			// // imshow(window_capture_name, frame);
+   //      	imshow(window_detection_name, frame_threshold);
+   //      	key=waitKey(1);
+   //      	}
 
 
 			// src_gray=ROI_gray;
@@ -1855,12 +1880,46 @@ int run_kuwahara(int argc,char *argv[]){
 		 //                    max_value, Threshold_Demo ); // Create a Trackbar to choose Threshold value
 		 //    Threshold_Demo( 0, 0 ); // Call the function to initialize
 			// cout<<"p1"<<endl;
+			Mat test;
+			// test=ROI_2_gray-kuwahara_ROI;
+			test=ROI_2_gray-ROI_gray;
+			int window_size=0;
+			for(int x=(window_size/2); x<test.cols-(window_size/2);x++){
+				for(int y=(window_size/2); y<test.rows-(window_size/2);y++){
+					if(Mpixel(test,x,y)>130){
+						Mpixel(test,x,y)=255;
+					}else{
+						Mpixel(test,x,y)=0;
+					}
+				}
+			}	
+			// thresholding_image(test, 40,false,7);
+			imshow("test",test);
+
 			Mat kuwahara_ROI_th;
 			kuwahara_ROI_th=kuwahara_ROI.clone();
-			thresholding_image(kuwahara_ROI_th, 50,false,5);
-			    // Edge detection
-    		Canny(kuwahara_ROI_th, kuwahara_ROI_th, 50, 200, 3);
 			double histogram[256];
+			int val=binary_histogram(kuwahara_ROI_th,105, histogram);
+			// if(val>100){
+			// 	val=val-30;	
+			// }else if(val<31){
+			// 	val=val+30;
+			// }
+			// }else if(val>=100&&val<150){
+			// 	val=val-80;
+			// }
+			// else if(val>=150&&val<250){
+			// 	val=val-100;
+			// }
+			// if(val>49){
+			// 	val=val-30;
+			// }
+			cout<<"val: "<<val<<endl;
+			thresholding_image(kuwahara_ROI_th, val,false,5);
+			Mat final=test+kuwahara_ROI_th;
+			    // Edge detection
+    		// Canny(kuwahara_ROI_th, kuwahara_ROI_th, 50, 200, 3);
+			
 
 			// imshow("kuwahara_ROI_th", kuwahara_ROI_th);
 			// key=waitKey(0);
@@ -1896,7 +1955,7 @@ int run_kuwahara(int argc,char *argv[]){
 			std::vector<vector<Point>>contours;
 			// findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 			// cout<<"p2"<<endl;
-			findContours(kuwahara_ROI_th,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+			findContours(final,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 			// cout<<"p3"<<endl;
 			Point ROI_mid_p;
 
@@ -1919,7 +1978,14 @@ int run_kuwahara(int argc,char *argv[]){
 			// cout<<"3"<<endl;
 			Scalar color=CV_RGB(255,0,0);
 			drawContours(drawing,contours,object_i,color,2,8);
+			cout<<"object_i: "<<object_i<<endl;
+			if(object_i!=-1){
+				cout<<"contour size: "<<contours[object_i].size()<<endl;
+			}
+			
+
 			imshow("ROI_gray", ROI_gray);
+			imshow("final", final);
 			imshow("kuwahara_ROI_th", kuwahara_ROI_th);
 			imshow("kuwahara_ROI", kuwahara_ROI);
 			imshow("drawing", drawing);
