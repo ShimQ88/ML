@@ -1706,15 +1706,25 @@ int run_kuwahara(int argc,char *argv[]){
 		  		continue;
 		  	}
 		  	
+		  	Kuhawara sample1;
+		  	Kuhawara sample2;
+		  	Kuhawara sample3;
+
+
+
 
 
 		  	/*The First image process*/
 		  	Mat3b image1;
+
 	        Mat gray_image1;
 		  	image1=imread(glob_result.gl_pathv[i],1);
 		   	resize(image1, image1, cv::Size(), 0.5, 0.5);
 		   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
 			cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
+			
+
+			exit(0);
 			
 		   	/*****************/
 
@@ -1741,6 +1751,14 @@ int run_kuwahara(int argc,char *argv[]){
 		  	resize(image3, image3, cv::Size(), 0.5, 0.5);
 		   	if(!image3.data){printf("Could not open the file\n"); exit(0);}
 			cvtColor(image3, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
+
+
+
+
+
+			sample1.main(image1);
+			sample2.main(image2);
+			sample3.main(image3);
 
 	   		//////////////////////////////////////
     		//Kuwahara filter using Summed-table//

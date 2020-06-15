@@ -21,6 +21,8 @@ using namespace std;
 using namespace chrono;
 
 
+
+
 #define Mpixel(image,x,y) ((uchar *)((image).data +(y)*((image).step)))[(x)*((image).channels())]//gray color space
 #define pixelB(image,x,y) image.data[image.step[0]*y+image.step[1]*x]	//Blue color space
 #define pixelG(image,x,y) image.data[image.step[0]*y+image.step[1]*x+1]	//Green color space
@@ -80,5 +82,77 @@ void Kuwahara_Filter_Gray_Without_Sum_Table(Mat source_image, Mat output_image, 
 
 void Filter_Gray(Mat image1, Mat image2, int window_size);
 int run_kuwahara(int argc,char *argv[]);
+
+class Kuhawara
+{
+
+private:
+	Mat original_img;
+	Mat gray_img;
+	Mat kuhawara_img;
+public:
+	void main(Mat source_img);
+	
+};
+
+void Kuhawara::main(Mat source_img){
+	if(source_img.cols>1000){
+		cout<<"resize operating"<<endl;
+		resize(source_img, original_img, cv::Size(), 0.5, 0.5);	
+	}else{
+		original_img=source_img;
+	}
+	cvtColor(original_img, gray_img, COLOR_BGR2GRAY);//color orginal image to gray scale
+	
+	double **integral_img=new double*[gray_img.cols+1];
+	double **squared_integral_img=new double*[gray_img.cols+1];
+	for(int i = 0; i < gray_img.cols+1; ++i){
+		integral_img[i] = new double[gray_img.rows+1];
+		squared_integral_img[i] = new double[gray_img.rows+1];
+	}
+	kuhawara_img=Mat::zeros(gray_img.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
+	Integral_Gray_Initialize(gray_img, integral_img, squared_integral_img);//create summed-table to integral_image array.
+    Kuwahara_Filter_Gray_With_Sum_Table(gray_img, kuhawara_img, integral_img, squared_integral_img, 3);//Applying kuwahara filter to output using integral_image.
+    /*Memory deallocation*/
+	for(int i = 0; i < gray_img.cols+1; ++i) {
+		delete [] integral_img[i];
+		delete [] squared_integral_img[i];
+	}
+	delete [] integral_img;
+	delete [] squared_integral_img;
+	
+}
+
+class Kuhawara_ROI
+{
+
+private:
+	Kuhawara **source;
+	
+	Mat ROI;
+	Mat ROI_gray;
+
+	Point p_start_roi_window;
+	Point p_end_roi_window;
+	Point p_center_of_object;
+
+	int p_center;
+
+
+
+public:
+	Kuhawara_ROI(){
+	
+	}
+	void Cropping_image(Mat source_img);
+	
+
+};
+
+void Kuhawara_ROI::Cropping_image(Mat source_img){
+	
+	
+}
+
 
 #endif
