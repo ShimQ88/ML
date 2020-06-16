@@ -1706,9 +1706,7 @@ int run_kuwahara(int argc,char *argv[]){
 		  		continue;
 		  	}
 		  	
-		  	Kuhawara sample1;
-		  	Kuhawara sample2;
-		  	Kuhawara sample3;
+		  	
 
 
 
@@ -1724,7 +1722,7 @@ int run_kuwahara(int argc,char *argv[]){
 			cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
 			
 
-			exit(0);
+			// exit(0);
 			
 		   	/*****************/
 
@@ -1753,12 +1751,32 @@ int run_kuwahara(int argc,char *argv[]){
 			cvtColor(image3, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
 
 
+			Kuhawara sample1(image1);
+			Kuhawara sample2(image2);
+			Kuhawara sample3(image3);
+		  	// Kuhawara sample2;
+		  	// Kuhawara sample3;
 
 
+			// sample1.main(image1);
+			// sample[0].main(image1);
+			// sample[1].main(image2);
+			// sample[2].main(image3);
+			// sample2.main(image2);
+			// sample3.main(image3);
+			// Mat t=sample[0].get_kuhawara_img();
+			cout<<"hello"<<endl;
 
-			sample1.main(image1);
-			sample2.main(image2);
-			sample3.main(image3);
+			Kuhawara_ROI ku(sample1,sample2,sample3);
+
+
+			
+
+			imshow("kuhawara_sample1", ku.get_blob());
+			imshow("get_thresholded_img", ku.get_thresholded_img());
+			key=waitKey(0);
+			continue;
+
 
 	   		//////////////////////////////////////
     		//Kuwahara filter using Summed-table//
