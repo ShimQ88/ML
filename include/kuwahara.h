@@ -14,7 +14,7 @@
 #include <glob.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include "contour.h"
 //namespace
 using namespace cv;
 using namespace std;
@@ -156,6 +156,7 @@ class Kuhawara_ROI
 {
 
 private:
+	bool is_initialize_success;
 	Kuhawara source1;
 	Kuhawara source2;
 	Kuhawara source3;
@@ -170,6 +171,8 @@ private:
 	Mat ROI_gray;
 	Mat ROI_thresholded;
 	Mat blob_window;
+	Mat drawing;
+
 
 	Point *p_start_roi_window;
 	Point *p_end_roi_window;
@@ -193,9 +196,11 @@ public:
 		temp_output=temp_output1+temp_output2;
 
 		thresholding_image(temp_output, 30,true,0);
-		median_filter(temp_output,temp_output,11);
+		median_filter(temp_output,temp_output,5);
 
 		
+
+
 		p_start_roi_window=new Point[200];//approx numb
 		p_end_roi_window=new Point[200];//approx numb
 
@@ -207,6 +212,7 @@ public:
 
 		if(count_numb==-100){
 			cout<<"Skip: too much blob"<<endl;
+			is_initialize_success=false;
 			return;
 		}//segmental fault
 
@@ -216,7 +222,7 @@ public:
 
 
 		test=input2.get_original_img();
-		circle(test,p_center_of_object,3,Scalar(0,0,255));
+		// circle(test,p_center_of_object,3,Scalar(0,0,255));
 		ROI=Cropping_ROI(input2.get_original_img(),p_center_of_object,200);
 
 
@@ -235,15 +241,37 @@ public:
 
 		ROI_thresholded=ROI_gray.clone();
 		// thresholding_image(ROI_thresholded, (int)pixel_value/total,true,0);
-		thresholding_image(ROI_thresholded, 40,true,0);
+		thresholding_image(ROI_thresholded, 30,false,0);
+		median_filter(ROI_thresholded,ROI_thresholded,3);
 
+		Point ROI_mid_p;
+
+		ROI_mid_p.x=ROI_gray.rows/2;
+		ROI_mid_p.y=ROI_gray.cols/2;
+
+		std::vector<vector<Point>>contours;
+
+		// findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+		findContours(ROI_thresholded,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+
+		int object_i = Find_The_Object_Contour(contours,ROI_mid_p);
+		// cout<<"p4"<<endl;
+		// cout<<"1"<<endl;
+		drawing=Mat::zeros(ROI_gray.size(),CV_8UC3);
+		Scalar color=CV_RGB(255,0,0);
+		drawContours(ROI,contours,object_i,color,2,8);
+		is_initialize_success=true;
 
 
 		// Mat ROI_thresholding=Cropping_ROI(temp_output,center_of_object,200);
 
 	}
-	Mat get_cropped_img(){return ROI;}
-	Mat get_test(){return test;}
+	bool get_initalization_result(){return is_initialize_success;}
+	Mat get_ROI_img(){return ROI;}
+	Mat get_temp_output1(){return temp_output1;}
+	Mat get_temp_output2(){return temp_output2;}
+	Mat get_temp_output(){return temp_output;}
+	Mat get_drawing(){return drawing;}
 	Mat get_blob(){return blob_window;}
 	Mat get_temp_output_img(){return temp_output;}
 	Mat get_thresholded_img(){return ROI_thresholded;}
