@@ -1698,6 +1698,34 @@ int run_kuwahara(int argc,char *argv[]){
 		  	cout << glob_result.gl_pathv[i] << endl;
 		  	cout << glob_result.gl_pathv[i+1] << endl;
 		  	cout << glob_result.gl_pathv[i+2] << endl;
+
+		  	cout << glob_result.gl_pathv[i+3] << endl;
+		  	cout << glob_result.gl_pathv[i+4] << endl;
+
+		  	bool is_the_end_numb_in_a_row=true;
+		  	int k=0;
+		  	int total_numb=0;
+		  	// while(is_the_end_numb_in_a_row==false){
+		  	// 	k=i;
+		  	// 	is_the_end_numb_in_a_row=check_numb_in_a_row(glob_result.gl_pathv[k],glob_result.gl_pathv[k+1]);
+		  	// 	k++;
+		  	// 	total_numb++;
+		  	// }
+
+		  	// Mat *image;
+		  	// if(total_numb==1){
+		  	// 	cout<<"There are nothing in a row step onto next picture"<<endl;
+		  	// 	continue;
+		  	// }else if(total_numb==2){
+		  	// 	cout<<"Lack of information of picture but operating anyway"<<endl;
+		  	// }else if(total_numb>2){
+
+
+		  	// }else{
+		  	// 	cout<<"Something going wrong"<<endl;
+		  	// }
+
+
 		  	bool is_the_end_numb_in_a_row1=check_numb_in_a_row(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
 		  	bool is_the_end_numb_in_a_row2=check_numb_in_a_row(glob_result.gl_pathv[i+1],glob_result.gl_pathv[i+2]);
 		  	
@@ -1706,54 +1734,101 @@ int run_kuwahara(int argc,char *argv[]){
 		  		continue;
 		  	}
 		  	
-		  	
-
-
-
-
-
-		  	/*The First image process*/
-		  	Mat3b image1;
-
-	        Mat gray_image1;
-		  	image1=imread(glob_result.gl_pathv[i],1);
-		   	// resize(image1, image1, cv::Size(), 0.5, 0.5);
-		   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
-			cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
-			
-
-			// exit(0);
-			
-		   	/*****************/
-
-		   	/*The Second image process*/
-	   		Mat3b image2;
-	   		Mat gray_image2;
-	   		image2=imread(glob_result.gl_pathv[i+1],1);	
-	   		// resize(image2, image2, cv::Size(), 0.5, 0.5);
-	   		if(!image2.data){printf("Could not open the file\n"); exit(0);}
-	   		cvtColor(image2,gray_image2, COLOR_BGR2GRAY);//color image2 to gray scale
-
-
-
-
-	   		/*The Third image process*/
-	   		Mat3b image3;
-	   		Mat gray_image3;
-	   	// 	if(is_the_end_numb_in_a_row==true){
-		  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
-		  	// }else{
-		  	// 	image3=imread(glob_result.gl_pathv[i],1);
+		  	// while(true){
+		  	// 	if()
 		  	// }
-		  	image3=imread(glob_result.gl_pathv[i+2],1);	
-		  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
-		   	if(!image3.data){printf("Could not open the file\n"); exit(0);}
-			cvtColor(image3, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
 
 
-			Kuhawara sample1(image1);
-			Kuhawara sample2(image2);
-			Kuhawara sample3(image3);
+
+
+
+		  	total_numb=3;
+		  	/*The First image process*/
+		  	Mat image[total_numb];
+		  	Kuhawara ku[total_numb];
+		  	for(int j=0;j<total_numb;j++){
+		  		image[j]=imread(glob_result.gl_pathv[i+j],1);
+		  		ku[j].main(image[j]);
+		  	}
+
+	        // Mat gray_image1;
+		  	// image1=imread(glob_result.gl_pathv[i],1);
+		   	// resize(image1, image1, cv::Size(), 0.5, 0.5);
+		   	// if(!image1.data){printf("Could not open the file\n"); exit(0);}
+
+
+		 //  	/*The First image process*/
+		 //  	Mat3b image1;
+
+	  //       Mat gray_image1;
+		 //  	image1=imread(glob_result.gl_pathv[i],1);
+		 //   	// resize(image1, image1, cv::Size(), 0.5, 0.5);
+		 //   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
+			// cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
+			
+
+			// // exit(0);
+			
+		 //   	/*****************/
+
+		 //   	/*The Second image process*/
+	  //  		Mat3b image2;
+	  //  		Mat gray_image2;
+	  //  		image2=imread(glob_result.gl_pathv[i+1],1);	
+	  //  		// resize(image2, image2, cv::Size(), 0.5, 0.5);
+	  //  		if(!image2.data){printf("Could not open the file\n"); exit(0);}
+	  //  		cvtColor(image2,gray_image2, COLOR_BGR2GRAY);//color image2 to gray scale
+
+
+
+
+	  //  		/*The Third image process*/
+	  //  		Mat3b image3;
+	  //  		Mat gray_image3;
+	  //  	// 	if(is_the_end_numb_in_a_row==true){
+		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
+		 //  	// }else{
+		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
+		 //  	// }
+		 //  	image3=imread(glob_result.gl_pathv[i+2],1);
+		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
+		 //   	if(!image3.data){printf("Could not open the file\n"); exit(0);}
+			// cvtColor(image3, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
+
+
+
+			// /*The Third image process*/
+	  //  		Mat3b image4;
+	  //  		Mat gray_image4;
+	  //  	// 	if(is_the_end_numb_in_a_row==true){
+		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
+		 //  	// }else{
+		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
+		 //  	// }
+		 //  	image4=imread(glob_result.gl_pathv[i+3],1);
+		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
+		 //   	if(!image4.data){printf("Could not open the file\n"); exit(0);}
+			// cvtColor(image4, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
+
+			// /*The Third image process*/
+	  //  		Mat3b image5;
+	  //  		Mat gray_image5;
+	  //  	// 	if(is_the_end_numb_in_a_row==true){
+		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
+		 //  	// }else{
+		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
+		 //  	// }
+		 //  	image5=imread(glob_result.gl_pathv[i+4],1);
+		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
+		 //   	if(!image5.data){printf("Could not open the file\n"); exit(0);}
+			// cvtColor(image5, gray_image5, COLOR_BGR2GRAY);//color image1 to gray scale
+
+
+			// Kuhawara sample1(image1);
+			// Kuhawara sample2(image2);
+			// Kuhawara sample3(image3);
+			// Kuhawara sample4(image4);
+			// Kuhawara sample5(image5);
 		  	// Kuhawara sample2;
 		  	// Kuhawara sample3;
 
@@ -1767,19 +1842,29 @@ int run_kuwahara(int argc,char *argv[]){
 			// Mat t=sample[0].get_kuhawara_img();
 			cout<<"hello"<<endl;
 
-			Kuhawara_ROI ROI(sample1,sample2,sample3);
+			Kuhawara_ROI ROI(ku[0],ku[1],ku[2]);
+			// Kuhawara_ROI ROI(sample1,sample2,sample3,sample4,sample5);
 
 			bool ROI_initialization=ROI.get_initalization_result();
 			
 			if(ROI_initialization==true){
-				imshow("total_output", ROI.get_temp_output());
-				imshow("temp_output1", ROI.get_temp_output1());
-				imshow("temp_output2", ROI.get_temp_output2());
+				// imshow("ROI1", ROI.get_ROI1());
+				// imshow("ROI2", ROI.get_ROI2());
+				// imshow("ROI3", ROI.get_ROI3());
+				imshow("tt", ROI.get_thresholded_img());
+				// imshow("ROI5", ROI.get_ROI1());
+
+				// imshow("temp_output2", ROI.get_temp_output2());
+
+				// imshow("total_output", ROI.get_temp_output());
+				// imshow("temp_output1", ROI.get_temp_output1());
+				// imshow("temp_output2", ROI.get_temp_output2());
+				// imshow("get_example", ROI.get_test());
 
 				// imshow("drawing", ROI.get_drawing());
-				imshow("ROI", ROI.get_ROI_img());
-				imshow("get_thresholded_img", ROI.get_thresholded_img());
-				imshow("sample2_img", sample2.get_original_img());
+				// imshow("ROI", ROI.get_ROI_img());
+				// imshow("get_thresholded_img", ROI.get_thresholded_img());
+				// imshow("sample2_img", sample2.get_original_img());
 				// key=waitKey(0);	
 			}else{
 				cout<<"initialization fail"<<endl;
@@ -1795,7 +1880,7 @@ int run_kuwahara(int argc,char *argv[]){
     		//////////////////////////////////////
 
 			// /*Memory Allocation*/
-			// double** integral_image1=new double*[gray_image1.cols+1];
+			// double** integral_image1=new double*[gray_image1.cols+1];`
 			// double** squared_integral_image1=new double*[gray_image1.cols+1];
 
 			// double** integral_image2=new double*[gray_image2.cols+1];
@@ -2173,8 +2258,8 @@ int run_kuwahara(int argc,char *argv[]){
 	// int cur_img_numb=stoi(str_cur_name);
 	// int diff_numb=cur_img_numb-prev_img_numb;
 			cout<<"path_ROI: "<<path_ROI<<endl; 
-			imwrite( path_ROI, ROI.get_ROI_img() );
-			imwrite( path_original, sample2.get_original_img() );
+			// imwrite( path_ROI, ROI.get_ROI_img() );
+			// imwrite( path_original, sample2.get_original_img() );
 			key=waitKey(0);
 			continue;
 
