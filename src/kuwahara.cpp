@@ -1703,14 +1703,22 @@ int run_kuwahara(int argc,char *argv[]){
 		  	cout << glob_result.gl_pathv[i+4] << endl;
 
 		  	bool is_the_end_numb_in_a_row=true;
-		  	int k=0;
+		  	int k=i;
 		  	int total_numb=0;
-		  	// while(is_the_end_numb_in_a_row==false){
-		  	// 	k=i;
-		  	// 	is_the_end_numb_in_a_row=check_numb_in_a_row(glob_result.gl_pathv[k],glob_result.gl_pathv[k+1]);
-		  	// 	k++;
-		  	// 	total_numb++;
-		  	// }
+
+		  	while(is_the_end_numb_in_a_row==true){
+		  		cout<<"K: "<<k<<endl;
+		  		
+		  		is_the_end_numb_in_a_row=check_numb_in_a_row(glob_result.gl_pathv[k], glob_result.gl_pathv[k+1]);
+		  		k++;
+		  		total_numb++;
+		  		if(total_numb>20){break;}
+		  	}
+		  	if(total_numb>20){
+		  		cout<<"The last collection of pictures"<<endl;
+		  		continue;
+		  	}
+		  	cout<<"total_numb: "<<total_numb<<endl;
 
 		  	// Mat *image;
 		  	// if(total_numb==1){
@@ -1726,13 +1734,13 @@ int run_kuwahara(int argc,char *argv[]){
 		  	// }
 
 
-		  	bool is_the_end_numb_in_a_row1=check_numb_in_a_row(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
-		  	bool is_the_end_numb_in_a_row2=check_numb_in_a_row(glob_result.gl_pathv[i+1],glob_result.gl_pathv[i+2]);
+		  	// bool is_the_end_numb_in_a_row1=check_numb_in_a_row(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
+		  	// bool is_the_end_numb_in_a_row2=check_numb_in_a_row(glob_result.gl_pathv[i+1],glob_result.gl_pathv[i+2]);
 		  	
-		  	if((is_the_end_numb_in_a_row1==false)||(is_the_end_numb_in_a_row2==false)){
-		  		cout<<"The file not in a row"<<endl;
-		  		continue;
-		  	}
+		  	// if((is_the_end_numb_in_a_row1==false)||(is_the_end_numb_in_a_row2==false)){
+		  	// 	cout<<"The file not in a row"<<endl;
+		  	// 	continue;
+		  	// }
 		  	
 		  	// while(true){
 		  	// 	if()
@@ -1742,7 +1750,7 @@ int run_kuwahara(int argc,char *argv[]){
 
 
 
-		  	total_numb=3;
+		  	// total_numb=5;
 		  	/*The First image process*/
 		  	Mat image[total_numb];
 		  	Kuhawara ku[total_numb];
@@ -1750,6 +1758,30 @@ int run_kuwahara(int argc,char *argv[]){
 		  		image[j]=imread(glob_result.gl_pathv[i+j],1);
 		  		ku[j].main(image[j]);
 		  	}
+		  	Kuhawara_ROI2 ku_ROI;
+		  	ku_ROI.main(ku,total_numb,1);
+		  	
+		  	Mat *ROI_t=new Mat[total_numb-1];
+		  	Mat *ROI_real=new Mat[total_numb];
+		  	ROI_t=ku_ROI.get_samp_output();
+		  	ROI_real=ku_ROI.get_ROI_img();
+		  	// ku_ROI.get_ROI_img();
+		  	// ROI_t=
+		  	for(int j=0;j<total_numb-1;j++){
+		  		imshow(to_string(j)+"minus", ROI_t[j]);
+		  		imshow(to_string(j), ROI_real[j]);
+
+		  	}
+		  	// imshow("0", ROI_t[0]);
+		  	// imshow("1", ROI_t[1]);
+		  	// imshow("2", ROI_t[2]);
+		  	// imshow("3", ROI_t[3]);
+		  	imshow("merged", ku_ROI.get_merged_samp_output());
+		  	imshow("drawing", ku_ROI.get_drawing());
+		  	// imshow("4", ROI_t[4]);
+		  	key=waitKey(0);
+		  	continue;
+		  	// getchar();
 
 	        // Mat gray_image1;
 		  	// image1=imread(glob_result.gl_pathv[i],1);
@@ -1840,36 +1872,36 @@ int run_kuwahara(int argc,char *argv[]){
 			// sample2.main(image2);
 			// sample3.main(image3);
 			// Mat t=sample[0].get_kuhawara_img();
-			cout<<"hello"<<endl;
+			// cout<<"hello"<<endl;
 
-			Kuhawara_ROI ROI(ku[0],ku[1],ku[2]);
-			// Kuhawara_ROI ROI(sample1,sample2,sample3,sample4,sample5);
+			// // Kuhawara_ROI ROI(ku[0],ku[1],ku[2]);
+			// // Kuhawara_ROI ROI(sample1,sample2,sample3,sample4,sample5);
 
-			bool ROI_initialization=ROI.get_initalization_result();
+			// bool ROI_initialization=ku_ROI.get_initalization_result();
 			
-			if(ROI_initialization==true){
-				// imshow("ROI1", ROI.get_ROI1());
-				// imshow("ROI2", ROI.get_ROI2());
-				// imshow("ROI3", ROI.get_ROI3());
-				imshow("tt", ROI.get_thresholded_img());
-				// imshow("ROI5", ROI.get_ROI1());
+			// if(ROI_initialization==true){
+			// 	// imshow("ROI1", ROI.get_ROI1());
+			// 	// imshow("ROI2", ROI.get_ROI2());
+			// 	// imshow("ROI3", ROI.get_ROI3());
+			// 	imshow("tt", ku_ROI.get_ROI_img());
+			// 	// imshow("ROI5", ROI.get_ROI1());
 
-				// imshow("temp_output2", ROI.get_temp_output2());
+			// 	// imshow("temp_output2", ROI.get_temp_output2());
 
-				// imshow("total_output", ROI.get_temp_output());
-				// imshow("temp_output1", ROI.get_temp_output1());
-				// imshow("temp_output2", ROI.get_temp_output2());
-				// imshow("get_example", ROI.get_test());
+			// 	// imshow("total_output", ROI.get_temp_output());
+			// 	// imshow("temp_output1", ROI.get_temp_output1());
+			// 	// imshow("temp_output2", ROI.get_temp_output2());
+			// 	// imshow("get_example", ROI.get_test());
 
-				// imshow("drawing", ROI.get_drawing());
-				// imshow("ROI", ROI.get_ROI_img());
-				// imshow("get_thresholded_img", ROI.get_thresholded_img());
-				// imshow("sample2_img", sample2.get_original_img());
-				// key=waitKey(0);	
-			}else{
-				cout<<"initialization fail"<<endl;
-				continue;
-			}
+			// 	// imshow("drawing", ROI.get_drawing());
+			// 	// imshow("ROI", ROI.get_ROI_img());
+			// 	imshow("get_thresholded_img", ku_ROI.get_thresholded_img());
+			// 	// imshow("sample2_img", sample2.get_original_img());
+			// 	// key=waitKey(0);	
+			// }else{
+			// 	cout<<"initialization fail"<<endl;
+			// 	continue;
+			// }
 			
 
 			// continue;
