@@ -88,8 +88,6 @@ int Find_The_Object_Contour(std::vector<vector<Point>>contours,Point center_of_o
 		if(g_val>l_val){
 			g_val=l_val;
 			final_i=i;
-			
-			
 		}
 	}
 	return final_i;

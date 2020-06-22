@@ -216,9 +216,22 @@ public:
 		total_numb=total;
 		some_temp_output=new Mat[2];
 
-		some_temp_output[0]=image[target_index-1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
-		some_temp_output[1]=image[target_index+1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
-		temp_output=some_temp_output[0]+some_temp_output[1];
+		if(target_index==0){
+			temp_output=image[target_index+1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+		}else if(target_index==total-1){
+			temp_output=image[target_index-1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+		}else{
+			some_temp_output[0]=image[target_index-1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+			some_temp_output[1]=image[target_index+1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+			temp_output=some_temp_output[0]+some_temp_output[1];	
+		}
+
+		// cout<<"THis is point 1"<<endl;
+		// some_temp_output[0]=image[target_index-1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+		// some_temp_output[1]=image[target_index+1].get_kuhawara_img()-image[target_index].get_kuhawara_img();
+		// temp_output=some_temp_output[0]+some_temp_output[1];
+
+
 		// for(int i=0;i<total_numb-1;i++){
 		// 	some_temp_output[i]=image[i].get_kuhawara_img()-image[i+1].get_kuhawara_img();
 			
@@ -236,23 +249,62 @@ public:
 
 		blob_window=Mat::zeros(image[target_index].get_ori_size_img(),CV_8UC3);//default size initializing
 
+		// cout<<"THis is point 2"<<endl;
 		int count_numb=blob(temp_output, blob_window, p_start_roi_window, p_end_roi_window);
 
+		// cout<<"THis is point 2-1"<<endl;
 		if(count_numb==-100){
 			cout<<"Skip: too much blob"<<endl;
 			is_initialize_success=false;
 			return;
 		}//segmental fault
-
+		// cout<<"THis is point 2-2"<<endl;
 		p_center_of_object=draw_rect_box(image[target_index].get_original_img(), p_start_roi_window, p_end_roi_window, 200);
 
+		//make scan the size of object
+		
+
+		int cropping_size=400;
+		// int number_of_pixel;
+		// int jj=0;
+		// while(true){
+		// 	cout<<"loop inside"<<endl;
+		// 	Mat temp_test=Cropping_ROI(temp_output,p_center_of_object,cropping_size);
+		// 	number_of_pixel=0;
+		// 	for(int i=0;i<temp_test.cols;i++){
+		// 		for(int j=0;j<temp_test.rows;j++){
+		// 			if( (i==2)||(j==2)||(j==temp_test.rows-3)||(i==temp_test.cols-3) ){
+		// 				cout<<"pixel_v: "<<(int)Mpixel(temp_test,i,j)<<endl;
+		// 				if( (int)Mpixel(temp_test,i,j)!=0){
+		// 					number_of_pixel++;
+		// 				}
+		// 				jj++;
+		// 			}
+					
+		// 		}
+		// 	}
+		// 	cout<<"jj: "<<jj<<endl;
+		// 	int total_pixel=cropping_size*cropping_size;
+			
+		// 	if( (temp_test.cols + temp_test.rows)*0.7 < number_of_pixel){
+				
+		// 	}else{
+		// 		break;
+		// 	}
+		// 	cropping_size=cropping_size+100;
+		// }
+		// cout<<"number_of_pixel: "<<number_of_pixel<<endl;
+		// cout<<"cropping_size: "<<cropping_size<<endl;
+		// getchar();
+
+		// cout<<"THis is point 3"<<endl;
 
 		// p_start_roi_window=new Point[200];
 		Kuhawara temp_ku[total];
 		samp_output = new Mat[total-1];
 		ROI=new Mat[total];
 		for(int i=0;i<total_numb;i++){
-			ROI[i]=Cropping_ROI(image[i].get_original_img(),p_center_of_object,400);
+			ROI[i]=Cropping_ROI(image[i].get_original_img(),p_center_of_object,cropping_size);
 			temp_ku[i].main(ROI[i]);
 		
 
@@ -265,23 +317,28 @@ public:
 			// 	temp_output=temp_output+some_temp_output[i];
 			// }
 		}
+		// cout<<"THis is point 4"<<endl;
 		int temp_i=0;
 
+
+		bool the_first_merge=false;
 		for(int i=0;i<total_numb;i++){			
 			if(i!=target_index){
-				cout<<"i: " <<i<<endl;
+				// cout<<"i: " <<i<<endl;
+				// cout<<"target_index: " <<target_index<<endl;
 				samp_output[temp_i]=temp_ku[i].get_kuhawara_img()-temp_ku[target_index].get_kuhawara_img();
 				
 
-				if(i==0){
-					merged_samp_output=samp_output[0].clone();
+				if(the_first_merge==false){
+					merged_samp_output=samp_output[temp_i].clone();
+					the_first_merge=true;
 				}else{
 					merged_samp_output=merged_samp_output+samp_output[temp_i];	
 				}
 				temp_i++;	
 			}
 		}
-
+		// cout<<"THis is point 5"<<endl;
 
 		
 
@@ -292,13 +349,13 @@ public:
 		// ROI_thresholded=ROI_gray.clone();
 		// // thresholding_image(ROI_thresholded, (int)pixel_value/total,true,0);
 		// // cv::threshold(ROI_gray, ROI_thresholded, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_TRIANGLE);
-		thresholding_image(merged_samp_output, 30,true,0);
+		thresholding_image(merged_samp_output, 50,true,0);
 		median_filter(merged_samp_output,merged_samp_output,7);
 
 		Point ROI_mid_p;
 
-		ROI_mid_p.x=ROI_gray.rows/2;
-		ROI_mid_p.y=ROI_gray.cols/2;
+		ROI_mid_p.x=merged_samp_output.rows/2;
+		ROI_mid_p.y=merged_samp_output.cols/2;
 
 		std::vector<vector<Point>>contours;
 

@@ -1695,12 +1695,12 @@ int run_kuwahara(int argc,char *argv[]){
 		int key=0;
 		for(unsigned int i=0; i<glob_result.gl_pathc-2; ++i){
 		// for(unsigned int i=0; i<1; ++i){
-		  	cout << glob_result.gl_pathv[i] << endl;
-		  	cout << glob_result.gl_pathv[i+1] << endl;
-		  	cout << glob_result.gl_pathv[i+2] << endl;
+		  	// cout << glob_result.gl_pathv[i] << endl;
+		  	// cout << glob_result.gl_pathv[i+1] << endl;
+		  	// cout << glob_result.gl_pathv[i+2] << endl;
 
-		  	cout << glob_result.gl_pathv[i+3] << endl;
-		  	cout << glob_result.gl_pathv[i+4] << endl;
+		  	// cout << glob_result.gl_pathv[i+3] << endl;
+		  	// cout << glob_result.gl_pathv[i+4] << endl;
 
 		  	bool is_the_end_numb_in_a_row=true;
 		  	int k=i;
@@ -1719,6 +1719,15 @@ int run_kuwahara(int argc,char *argv[]){
 		  		continue;
 		  	}
 		  	cout<<"total_numb: "<<total_numb<<endl;
+
+		  	for(int k=0;k<total_numb;k++){
+		  		cout << glob_result.gl_pathv[i+k] << endl;
+		  	}
+
+		  	if(total_numb==1){
+		  		cout<<"skip just one picture in a row"<<endl;
+		  		continue;
+		  	}
 
 		  	// Mat *image;
 		  	// if(total_numb==1){
@@ -1752,6 +1761,21 @@ int run_kuwahara(int argc,char *argv[]){
 
 		  	// total_numb=5;
 		  	/*The First image process*/
+		  	Mat samp_output[total_numb];
+		  	if(total_numb>3){
+		  		total_numb=5;
+		  	// 	for(int l=0;l<total_numb;l++){
+		  	// 		samp_output[l]=temp_ku[0].get_kuhawara_img()-temp_ku[l].get_kuhawara_img();	
+		  	// 	}
+		  	// 	int t_pix=0;
+		  	// 	for(int l=0;l<samp_output[0].cols;l++){
+					// for(int j=0;j<samp_output[0].rows;j++){
+		  	// 			if(Mpixel(samp_output[],l,j))
+		  	// 			t_pix++;
+
+		  	// 		}
+		  	// 	}
+		  	}
 		  	Mat image[total_numb];
 		  	Kuhawara ku[total_numb];
 		  	for(int j=0;j<total_numb;j++){
@@ -1759,28 +1783,48 @@ int run_kuwahara(int argc,char *argv[]){
 		  		ku[j].main(image[j]);
 		  	}
 		  	Kuhawara_ROI2 ku_ROI;
-		  	ku_ROI.main(ku,total_numb,1);
-		  	
-		  	Mat *ROI_t=new Mat[total_numb-1];
-		  	Mat *ROI_real=new Mat[total_numb];
-		  	ROI_t=ku_ROI.get_samp_output();
-		  	ROI_real=ku_ROI.get_ROI_img();
-		  	// ku_ROI.get_ROI_img();
-		  	// ROI_t=
-		  	for(int j=0;j<total_numb-1;j++){
-		  		imshow(to_string(j)+"minus", ROI_t[j]);
-		  		imshow(to_string(j), ROI_real[j]);
+		  	int loop_break=0;
+		  	while(true){
+		  		cout<<"index: "<<loop_break<<endl;
+			  	ku_ROI.main(ku,total_numb,loop_break);
+			  	
+			  	Mat *ROI_t=new Mat[total_numb-1];
+			  	Mat *ROI_real=new Mat[total_numb];
+			  	ROI_t=ku_ROI.get_samp_output();
+			  	ROI_real=ku_ROI.get_ROI_img();
+			  	// ku_ROI.get_ROI_img();
+			  	// ROI_t=
+			  	// for(int j=0;j<total_numb-1;j++){
+			  	// 	imshow(to_string(j)+"minus", ROI_t[j]);
+			  	// 	imshow(to_string(j), ROI_real[j]);
 
+			  	// }
+			  	// imshow("0", ROI_t[0]);
+			  	// imshow("1", ROI_t[1]);
+			  	// imshow("2", ROI_t[2]);
+			  	// imshow("3", ROI_t[3]);
+			  	if(ku_ROI.get_initalization_result()==false){
+
+			  	}else{
+			  		imshow("merged", ku_ROI.get_merged_samp_output());
+			  		imshow("drawing", ku_ROI.get_drawing());
+			  		imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
+			  		imshow("4", ROI_real[loop_break]);
+			  		key=waitKey(0);	
+			  	}
+			  
+			  	// continue;
+			  	loop_break++;
+
+			  	if(loop_break==total_numb){
+			  		cout<<"loop break"<<endl;
+			  		break;
+			  	}
+			  	
 		  	}
-		  	// imshow("0", ROI_t[0]);
-		  	// imshow("1", ROI_t[1]);
-		  	// imshow("2", ROI_t[2]);
-		  	// imshow("3", ROI_t[3]);
-		  	imshow("merged", ku_ROI.get_merged_samp_output());
-		  	imshow("drawing", ku_ROI.get_drawing());
-		  	// imshow("4", ROI_t[4]);
-		  	key=waitKey(0);
+		  	i=i+total_numb-1;
 		  	continue;
+		  	// break;
 		  	// getchar();
 
 	        // Mat gray_image1;
