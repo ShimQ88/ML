@@ -1763,7 +1763,7 @@ int run_kuwahara(int argc,char *argv[]){
 		  	/*The First image process*/
 		  	Mat samp_output[total_numb];
 		  	if(total_numb>3){
-		  		total_numb=5;
+		  		total_numb=4;
 		  	// 	for(int l=0;l<total_numb;l++){
 		  	// 		samp_output[l]=temp_ku[0].get_kuhawara_img()-temp_ku[l].get_kuhawara_img();	
 		  	// 	}
@@ -1794,18 +1794,21 @@ int run_kuwahara(int argc,char *argv[]){
 			  	ROI_real=ku_ROI.get_ROI_img();
 			  	// ku_ROI.get_ROI_img();
 			  	// ROI_t=
-			  	// for(int j=0;j<total_numb-1;j++){
-			  	// 	imshow(to_string(j)+"minus", ROI_t[j]);
-			  	// 	imshow(to_string(j), ROI_real[j]);
-
-			  	// }
-			  	// imshow("0", ROI_t[0]);
+			  	
 			  	// imshow("1", ROI_t[1]);
 			  	// imshow("2", ROI_t[2]);
 			  	// imshow("3", ROI_t[3]);
 			  	if(ku_ROI.get_initalization_result()==false){
 
 			  	}else{
+			  		for(int j=0;j<total_numb-1;j++){
+				  		// imshow(to_string(j)+"minus", ROI_t[j]);
+				  		int val=ku_ROI.get_pixel(j);
+				  		cout<<"brighest pixel "<<j<<": "<<val<<endl;
+				  		// imshow(to_string(j), ROI_real[j]);
+
+				  	}
+				  	imshow("0", ku_ROI.get_merged_samp_output2());
 			  		imshow("merged", ku_ROI.get_merged_samp_output());
 			  		imshow("drawing", ku_ROI.get_drawing());
 			  		imshow("get_temp_output_img", ku_ROI.get_temp_output_img());

@@ -182,6 +182,7 @@ private:
 
 	Mat *samp_output;
 	Mat merged_samp_output;
+	Mat merged_samp_output2;
 	// Mat samp_output1;
 	// Mat samp_output2;
 	// Mat samp_output3;
@@ -262,9 +263,38 @@ public:
 		p_center_of_object=draw_rect_box(image[target_index].get_original_img(), p_start_roi_window, p_end_roi_window, 200);
 
 		//make scan the size of object
-		
+		bool is_tri=false;
 
-		int cropping_size=400;
+		int ROI_frame_size=20;
+		while(true){
+			for(int k=p_center_of_object.x-ROI_frame_size;k<p_center_of_object.x+ROI_frame_size;k++){
+				for(int l=p_center_of_object.y-ROI_frame_size;l<p_center_of_object.y+ROI_frame_size;l++){
+					if( (k==p_center_of_object.x-ROI_frame_size)||(k==p_center_of_object.x+ROI_frame_size-1)||(l==p_center_of_object.y-ROI_frame_size)||(l==p_center_of_object.y+ROI_frame_size-1) ){
+						Point t_pp;
+						t_pp.x=k;
+						t_pp.y=l;
+						// circle(temp_output,t_pp,3,Scalar(255,255,255));
+						if((int)Mpixel(temp_output,k,l)!=0 ){
+							is_tri=true;
+						}
+					}
+
+				}			
+			}
+			ROI_frame_size=ROI_frame_size+20;
+			if(is_tri==false){
+				break;
+			}
+			is_tri=false;
+			if(ROI_frame_size>250){
+				break;
+				cout<<"error for size"<<endl;
+			}
+		}
+		cout<<"is_tri: "<<is_tri<<endl;
+
+		int cropping_size=ROI_frame_size*2;
+		cout<<"framesize: "<<cropping_size<<endl;
 		// int number_of_pixel;
 		// int jj=0;
 		// while(true){
@@ -341,7 +371,7 @@ public:
 		// cout<<"THis is point 5"<<endl;
 
 		
-
+		merged_samp_output2=merged_samp_output.clone();
 		// ROI=Cropping_ROI(image[1].get_original_img(),p_center_of_object,200);
 
 		// cvtColor(ROI, ROI_gray, CV_BGR2GRAY);
@@ -349,8 +379,10 @@ public:
 		// ROI_thresholded=ROI_gray.clone();
 		// // thresholding_image(ROI_thresholded, (int)pixel_value/total,true,0);
 		// // cv::threshold(ROI_gray, ROI_thresholded, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_TRIANGLE);
-		thresholding_image(merged_samp_output, 50,true,0);
-		median_filter(merged_samp_output,merged_samp_output,7);
+
+
+		thresholding_image(merged_samp_output, 45,true,0);
+		median_filter(merged_samp_output,merged_samp_output,9);
 
 		Point ROI_mid_p;
 
@@ -497,12 +529,25 @@ public:
 	Mat get_temp_output_img(){return temp_output;}
 	Mat get_thresholded_img(){return ROI_thresholded;}
 	Mat get_merged_samp_output(){return merged_samp_output;}
-
+	Mat get_merged_samp_output2(){return merged_samp_output2;}
 	// Mat get_ROI1(){return samp_output1;}
 	// Mat get_ROI2(){return samp_output2;}
 	// Mat get_ROI3(){return samp_output3;}
 	// Mat get_ROI4(){return samp_output4;}
 	Mat* get_samp_output(){return samp_output;}
+	int get_pixel(int target){
+		Mat *temp_ROI=get_samp_output();
+		Mat target_ROI=temp_ROI[target];
+		int to=-999;
+		for(int i=0;i<target_ROI.cols;i++){
+			for(int j=0;j<target_ROI.rows;j++){
+				if( (int)Mpixel(target_ROI,i,j)>to ){
+					to=(int)Mpixel(target_ROI,i,j);
+				}
+			}
+		}
+		return to;
+	}
 	
 };
 
@@ -816,6 +861,7 @@ public:
 	Mat get_ROI3(){return samp_output3;}
 	Mat get_ROI4(){return samp_output4;}
 	Mat get_ROI5(){return samp_output;}
+
 	
 };
 
