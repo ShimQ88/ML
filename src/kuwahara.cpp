@@ -1692,8 +1692,21 @@ int run_kuwahara(int argc,char *argv[]){
 		glob_t glob_result;
 		glob(path,GLOB_TILDE,NULL,&glob_result);
 		// glob(argv[2],GLOB_TILDE,NULL,&glob_result);
+		
+
+		ofstream myfile ("ROI_images/contour.txt");
+		if (myfile.is_open()){
+		    
+		}else{
+			cout << "Unable to open file";
+			exit(0);
+		}
+
 		int key=0;
-		for(unsigned int i=0; i<glob_result.gl_pathc-2; ++i){
+		int folder_numb=0;
+		int file_numb=0;
+		for(unsigned int i=0; i<glob_result.gl_pathc-1; ++i){
+			cout<<"glob_result.gl_pathc: "<<glob_result.gl_pathc<<endl;
 		// for(unsigned int i=0; i<1; ++i){
 		  	// cout << glob_result.gl_pathv[i] << endl;
 		  	// cout << glob_result.gl_pathv[i+1] << endl;
@@ -1708,7 +1721,10 @@ int run_kuwahara(int argc,char *argv[]){
 
 		  	while(is_the_end_numb_in_a_row==true){
 		  		cout<<"K: "<<k<<endl;
-		  		
+		  		if(k==glob_result.gl_pathc-1||(k==glob_result.gl_pathc-2)){
+		  			total_numb++;
+		  			break;
+		  		}
 		  		is_the_end_numb_in_a_row=check_numb_in_a_row(glob_result.gl_pathv[k], glob_result.gl_pathv[k+1]);
 		  		k++;
 		  		total_numb++;
@@ -1720,41 +1736,14 @@ int run_kuwahara(int argc,char *argv[]){
 		  	}
 		  	cout<<"total_numb: "<<total_numb<<endl;
 
-		  	for(int k=0;k<total_numb;k++){
-		  		cout << glob_result.gl_pathv[i+k] << endl;
+		  	for(int l=0;l<total_numb;l++){
+		  		cout << glob_result.gl_pathv[i+l] << endl;
 		  	}
 
 		  	if(total_numb==1){
 		  		cout<<"skip just one picture in a row"<<endl;
 		  		continue;
 		  	}
-
-		  	// Mat *image;
-		  	// if(total_numb==1){
-		  	// 	cout<<"There are nothing in a row step onto next picture"<<endl;
-		  	// 	continue;
-		  	// }else if(total_numb==2){
-		  	// 	cout<<"Lack of information of picture but operating anyway"<<endl;
-		  	// }else if(total_numb>2){
-
-
-		  	// }else{
-		  	// 	cout<<"Something going wrong"<<endl;
-		  	// }
-
-
-		  	// bool is_the_end_numb_in_a_row1=check_numb_in_a_row(glob_result.gl_pathv[i],glob_result.gl_pathv[i+1]);
-		  	// bool is_the_end_numb_in_a_row2=check_numb_in_a_row(glob_result.gl_pathv[i+1],glob_result.gl_pathv[i+2]);
-		  	
-		  	// if((is_the_end_numb_in_a_row1==false)||(is_the_end_numb_in_a_row2==false)){
-		  	// 	cout<<"The file not in a row"<<endl;
-		  	// 	continue;
-		  	// }
-		  	
-		  	// while(true){
-		  	// 	if()
-		  	// }
-
 
 
 
@@ -1763,18 +1752,7 @@ int run_kuwahara(int argc,char *argv[]){
 		  	/*The First image process*/
 		  	Mat samp_output[total_numb];
 		  	if(total_numb>3){
-		  		total_numb=4;
-		  	// 	for(int l=0;l<total_numb;l++){
-		  	// 		samp_output[l]=temp_ku[0].get_kuhawara_img()-temp_ku[l].get_kuhawara_img();	
-		  	// 	}
-		  	// 	int t_pix=0;
-		  	// 	for(int l=0;l<samp_output[0].cols;l++){
-					// for(int j=0;j<samp_output[0].rows;j++){
-		  	// 			if(Mpixel(samp_output[],l,j))
-		  	// 			t_pix++;
-
-		  	// 		}
-		  	// 	}
+		  		total_numb=5;
 		  	}
 		  	Mat image[total_numb];
 		  	Kuhawara ku[total_numb];
@@ -1787,36 +1765,67 @@ int run_kuwahara(int argc,char *argv[]){
 		  	while(true){
 		  		cout<<"index: "<<loop_break<<endl;
 			  	ku_ROI.main(ku,total_numb,loop_break);
+			  	cout<<"p1"<<endl;
 			  	
-			  	Mat *ROI_t=new Mat[total_numb-1];
-			  	Mat *ROI_real=new Mat[total_numb];
-			  	ROI_t=ku_ROI.get_samp_output();
-			  	ROI_real=ku_ROI.get_ROI_img();
-			  	// ku_ROI.get_ROI_img();
-			  	// ROI_t=
-			  	
-			  	// imshow("1", ROI_t[1]);
-			  	// imshow("2", ROI_t[2]);
-			  	// imshow("3", ROI_t[3]);
+			  	// Mat *ROI_t=new Mat[total_numb-1];
+			  	// Mat *ROI_real=new Mat[total_numb];
+			  	// ROI_t=ku_ROI.get_samp_output();
+			  	// ROI_real=ku_ROI.get_ROI_img();
 			  	if(ku_ROI.get_initalization_result()==false){
 
 			  	}else{
-			  		for(int j=0;j<total_numb-1;j++){
-				  		// imshow(to_string(j)+"minus", ROI_t[j]);
-				  		int val=ku_ROI.get_pixel(j);
-				  		cout<<"brighest pixel "<<j<<": "<<val<<endl;
-				  		// imshow(to_string(j), ROI_real[j]);
+			  		// for(int j=0;j<total_numb-1;j++){
+				  	// 	// imshow(to_string(j)+"minus", ROI_t[j]);
+				  	// 	int val=ku_ROI.get_pixel(j);
+				  	// 	cout<<"brighest pixel "<<j<<": "<<val<<endl;
+				  	// 	// imshow(to_string(j), ROI_real[j]);
 
-				  	}
-				  	imshow("0", ku_ROI.get_merged_samp_output2());
-			  		imshow("merged", ku_ROI.get_merged_samp_output());
-			  		imshow("drawing", ku_ROI.get_drawing());
-			  		imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
-			  		imshow("4", ROI_real[loop_break]);
-			  		key=waitKey(0);	
+				  	// }
+				  	// imshow("0", ku_ROI.get_merged_samp_output2());
+			  		// imshow("merged", ku_ROI.get_merged_samp_output());
+			  		// imshow("drawing", ku_ROI.get_drawing());
+			  		// imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
+			  		// // imshow("4", ROI_real[loop_break]);
+			  		// key=waitKey(0);
+
+			  		if(file_numb>10){
+			  			folder_numb++;
+			  		}
+			  		cout<<"p2"<<endl;
+			  		string str_folder_numb=to_string(folder_numb);
+			  		string saving_directory1="ROI_images/ROI/"+str_folder_numb+"/";
+				  	string saving_directory2="ROI_images/Contour/"+str_folder_numb+"/";
+
+				  	if(folder_numb==0){
+			  			creating_folder(saving_directory1);
+			  			creating_folder(saving_directory2);
+			  		}
+			  		if(file_numb>10){
+			  			creating_folder(saving_directory1);
+			  			creating_folder(saving_directory2);
+			  			file_numb=0;
+			  		}
+
+				  	string file_type1="_ROI.jpg";
+				  	string file_type2="_contour.jpg";
+			  		string file_name = glob_result.gl_pathv[i+loop_break];
+			  	
+			  		write_img(ku_ROI.get_main_ROI_img() ,saving_directory1,file_name,file_type1);
+			  		write_img(ku_ROI.get_ROI_and_drawing() ,saving_directory2,file_name,file_type2);
+			  		file_numb++;
+			  		
+					
+			  		
+			  		string CE_val=ku_ROI.get_contour_txt(); 
+			  		myfile << CE_val;
+			  		getchar();
+			  		
+			  		
+			  		
+			  		
 			  	}
-			  
-			  	// continue;
+			  	
+			  	
 			  	loop_break++;
 
 			  	if(loop_break==total_numb){
@@ -1825,508 +1834,34 @@ int run_kuwahara(int argc,char *argv[]){
 			  	}
 			  	
 		  	}
-		  	i=i+total_numb-1;
-		  	continue;
-		  	// break;
-		  	// getchar();
+		  	// i=i+total_numb-1;
+		  	
+		  	// continue;
+		  	// string saving_directory="ROI_images/";
+		  	// string file_name = glob_result.gl_pathv[i];
+		  	
+		  	// write_img(ku_ROI.get_drawing() ,saving_directory,file_name);
 
-	        // Mat gray_image1;
-		  	// image1=imread(glob_result.gl_pathv[i],1);
-		   	// resize(image1, image1, cv::Size(), 0.5, 0.5);
-		   	// if(!image1.data){printf("Could not open the file\n"); exit(0);}
 
+			// string saving_directory="ROI_images/";
+			// string s = glob_result.gl_pathv[i];
+			// string delimiter = ".";
+			// int delimiter = s.find('.');
+			// cout<<"test: "<<test<<endl;
+			// cout<<"delimiter: "<<delimiter<<endl;
+			// string token2 = s.substr(s.find('/')+1);
+			// string token3 = token2.substr(0,token2.find('.'));
 
-		 //  	/*The First image process*/
-		 //  	Mat3b image1;
 
-	  //       Mat gray_image1;
-		 //  	image1=imread(glob_result.gl_pathv[i],1);
-		 //   	// resize(image1, image1, cv::Size(), 0.5, 0.5);
-		 //   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
-			// cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
-			
+			// cout<<"token3: "<<token3<<endl;
+			// cout<<"s: "<<s<<endl;
 
-			// // exit(0);
-			
-		 //   	/*****************/
 
-		 //   	/*The Second image process*/
-	  //  		Mat3b image2;
-	  //  		Mat gray_image2;
-	  //  		image2=imread(glob_result.gl_pathv[i+1],1);	
-	  //  		// resize(image2, image2, cv::Size(), 0.5, 0.5);
-	  //  		if(!image2.data){printf("Could not open the file\n"); exit(0);}
-	  //  		cvtColor(image2,gray_image2, COLOR_BGR2GRAY);//color image2 to gray scale
+			// string prev_name=glob_result.gl_pathv[i];
+			// string str_prev_name=prev_name.substr(prev_name.size()-8,4);
 
-
-
-
-	  //  		/*The Third image process*/
-	  //  		Mat3b image3;
-	  //  		Mat gray_image3;
-	  //  	// 	if(is_the_end_numb_in_a_row==true){
-		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
-		 //  	// }else{
-		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
-		 //  	// }
-		 //  	image3=imread(glob_result.gl_pathv[i+2],1);
-		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
-		 //   	if(!image3.data){printf("Could not open the file\n"); exit(0);}
-			// cvtColor(image3, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
-
-
-
-			// /*The Third image process*/
-	  //  		Mat3b image4;
-	  //  		Mat gray_image4;
-	  //  	// 	if(is_the_end_numb_in_a_row==true){
-		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
-		 //  	// }else{
-		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
-		 //  	// }
-		 //  	image4=imread(glob_result.gl_pathv[i+3],1);
-		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
-		 //   	if(!image4.data){printf("Could not open the file\n"); exit(0);}
-			// cvtColor(image4, gray_image3, COLOR_BGR2GRAY);//color image1 to gray scale
-
-			// /*The Third image process*/
-	  //  		Mat3b image5;
-	  //  		Mat gray_image5;
-	  //  	// 	if(is_the_end_numb_in_a_row==true){
-		 //  	// 	image3=imread(glob_result.gl_pathv[i+1],1);	
-		 //  	// }else{
-		 //  	// 	image3=imread(glob_result.gl_pathv[i],1);
-		 //  	// }
-		 //  	image5=imread(glob_result.gl_pathv[i+4],1);
-		 //  	// resize(image3, image3, cv::Size(), 0.5, 0.5);
-		 //   	if(!image5.data){printf("Could not open the file\n"); exit(0);}
-			// cvtColor(image5, gray_image5, COLOR_BGR2GRAY);//color image1 to gray scale
-
-
-			// Kuhawara sample1(image1);
-			// Kuhawara sample2(image2);
-			// Kuhawara sample3(image3);
-			// Kuhawara sample4(image4);
-			// Kuhawara sample5(image5);
-		  	// Kuhawara sample2;
-		  	// Kuhawara sample3;
-
-
-			// sample1.main(image1);
-			// sample[0].main(image1);
-			// sample[1].main(image2);
-			// sample[2].main(image3);
-			// sample2.main(image2);
-			// sample3.main(image3);
-			// Mat t=sample[0].get_kuhawara_img();
-			// cout<<"hello"<<endl;
-
-			// // Kuhawara_ROI ROI(ku[0],ku[1],ku[2]);
-			// // Kuhawara_ROI ROI(sample1,sample2,sample3,sample4,sample5);
-
-			// bool ROI_initialization=ku_ROI.get_initalization_result();
-			
-			// if(ROI_initialization==true){
-			// 	// imshow("ROI1", ROI.get_ROI1());
-			// 	// imshow("ROI2", ROI.get_ROI2());
-			// 	// imshow("ROI3", ROI.get_ROI3());
-			// 	imshow("tt", ku_ROI.get_ROI_img());
-			// 	// imshow("ROI5", ROI.get_ROI1());
-
-			// 	// imshow("temp_output2", ROI.get_temp_output2());
-
-			// 	// imshow("total_output", ROI.get_temp_output());
-			// 	// imshow("temp_output1", ROI.get_temp_output1());
-			// 	// imshow("temp_output2", ROI.get_temp_output2());
-			// 	// imshow("get_example", ROI.get_test());
-
-			// 	// imshow("drawing", ROI.get_drawing());
-			// 	// imshow("ROI", ROI.get_ROI_img());
-			// 	imshow("get_thresholded_img", ku_ROI.get_thresholded_img());
-			// 	// imshow("sample2_img", sample2.get_original_img());
-			// 	// key=waitKey(0);	
-			// }else{
-			// 	cout<<"initialization fail"<<endl;
-			// 	continue;
-			// }
-			
-
-			// continue;
-
-
-	   		//////////////////////////////////////
-    		//Kuwahara filter using Summed-table//
-    		//////////////////////////////////////
-
-			// /*Memory Allocation*/
-			// double** integral_image1=new double*[gray_image1.cols+1];`
-			// double** squared_integral_image1=new double*[gray_image1.cols+1];
-
-			// double** integral_image2=new double*[gray_image2.cols+1];
-			// double** squared_integral_image2=new double*[gray_image2.cols+1];
-
-			// double** integral_image3=new double*[gray_image3.cols+1];
-			// double** squared_integral_image3=new double*[gray_image3.cols+1];
-
-			// for(int i = 0; i < gray_image2.cols+1; ++i){
-			// 	integral_image1[i] = new double[gray_image1.rows+1];
-			// 	squared_integral_image1[i] = new double[gray_image1.rows+1];
-
-			// 	integral_image2[i] = new double[gray_image2.rows+1];
-			// 	squared_integral_image2[i] = new double[gray_image2.rows+1];
-
-			// 	integral_image3[i] = new double[gray_image3.rows+1];
-			// 	squared_integral_image3[i] = new double[gray_image3.rows+1];
-			// }
-   //  		/*********************/	
-
-			// Mat filtered_image1, filtered_image2, filtered_image3;
-
-			// filtered_image1=Mat::zeros(gray_image1.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-			// filtered_image2=Mat::zeros(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-			// filtered_image3=Mat::zeros(gray_image3.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-
-			// Integral_Gray_Initialize(gray_image1,integral_image1,squared_integral_image1);//create summed-table to integral_image array.
-   //  		Kuwahara_Filter_Gray_With_Sum_Table(gray_image1,filtered_image1,integral_image1,squared_integral_image1,3);//Applying kuwahara filter to output using integral_image.
-
-   //  		Integral_Gray_Initialize(gray_image2,integral_image2,squared_integral_image2);//create summed-table to integral_image array.
-   //  		Kuwahara_Filter_Gray_With_Sum_Table(gray_image2,filtered_image2,integral_image2,squared_integral_image2,3);//Applying kuwahara filter to output using integral_image.
-    		
-			// Integral_Gray_Initialize(gray_image3, integral_image3, squared_integral_image3);//create summed-table to integral_image array.
-   //  		Kuwahara_Filter_Gray_With_Sum_Table(gray_image3, filtered_image3, integral_image3, squared_integral_image3, 3);//Applying kuwahara filter to output using integral_image.
-
-			// /*Memory deallocation*/
-			// for(int i = 0; i < gray_image1.cols+1; ++i) {
-			// 	delete [] integral_image1[i];
-			// 	delete [] squared_integral_image1[i];
-
-			// 	delete [] integral_image2[i];
-			// 	delete [] squared_integral_image2[i];
-
-			// 	delete [] integral_image3[i];
-			// 	delete [] squared_integral_image3[i];
-			// }
-			// delete [] integral_image1;
-			// delete [] squared_integral_image1;
-			// delete [] integral_image2;
-			// delete [] squared_integral_image2;
-			// delete [] integral_image3;
-			// delete [] squared_integral_image3;
-			// /***************/
-			// /*subtraction process between The first image and the second image*/
-
-			// Mat output1;
-			// output1=filtered_image1-filtered_image2;	
-			// // if(is_the_end_numb_in_a_row==true){
-		 // //  		output1=filtered_image1-filtered_image2;
-		 // //  	}else{
-		 // //  		output1=filtered_image2-filtered_image1;
-		 // //  	}
-		 //  	// Mat temp_output1=filtered_image1-filtered_image2;
-		 //  	// Mat temp_output2=filtered_image2-filtered_image1;
-
-		 //  	Mat temp_output1=filtered_image1-filtered_image2;
-		 //  	Mat temp_output2=filtered_image3-filtered_image2;
-
-			// // median_filter(output1,output1,5);
-			// // median_filter(temp_output1,temp_output1,15);
-			// // median_filter(temp_output2,temp_output2,15);
-
-			// /***Cropping Object by outline of object***/
-			// Mat temp_window=Mat::zeros(image2.size(),IMREAD_GRAYSCALE);//gray case
-			// // Image_stitching(gray_image2,output,temp_window);
-
-
-			// Mat blob_window=Mat::zeros(image2.size(),CV_8UC3);
-
-			// // thresholding_image(temp_output1, 10,true,0);
-			// // thresholding_image(temp_output2, 10,true,0);
-
-			// Mat temp_output=temp_output1+temp_output2;
-			// thresholding_image(temp_output, 30,true,0);
-
-			// // imshow("temp_output1", temp_output1);
-			// // imshow("temp_output2", temp_output2);
-			
-
-			// median_filter(temp_output,temp_output,11);
-			// // thresholding_image(temp_output1, 10,true,0);
-			// // thresholding_image(temp_output2, 10,true,0);
-
-			// // imshow("temp_output1", temp_output1);
-			// // imshow("temp_output2", temp_output2);
-			// // key=waitKey(0);
-			// // continue;
-
-			// Point *p1,*p2;
-			// p1=new Point[200];//approx numb
-			// p2=new Point[200];//approx numb
-
-			// // Point p1[200],p2[200];
-
-			// // p1=new Point[200];
-			// // p2=new Point[200];
-			// // int count_numb=blob(output1,blob_window,p1,p2);
-
-			// int count_numb=blob(temp_output,blob_window,p1,p2);
-
-			// if(count_numb==-100){
-			// 	cout<<"Skip: too much blob"<<endl;
-			// 	continue;
-			// }//segmental fault
-			// // int count_numb=blob(output2,blob_window,p1,p2);
-			
-			
-			// Point center_of_object=draw_rect_box(image2, p1, p2, 200);
-
-			// Mat ROI=Cropping_ROI(image2,center_of_object,200);
-			// Mat ROI_thresholding=Cropping_ROI(temp_output,center_of_object,200);
-
-			// // Mat ROI_2=Cropping_ROI(image2,center_of_object2,200);
-
-			// Mat ROI_gray,ROI_2_gray;
-			// cvtColor(ROI, ROI_gray, CV_BGR2GRAY);
-			// // Canny(ROI_gray, ROI_gray, 50, 200, 3);
-
-			// std::vector<vector<Point>>contours;
-			// // findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-			// // cout<<"p2"<<endl;
-			// findContours(ROI_thresholding,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-			// // cout<<"p3"<<endl;
-			// Point ROI_mid_p;
-
-			// ROI_mid_p.x=ROI_gray.rows/2;
-			// ROI_mid_p.y=ROI_gray.cols/2;
-
-			// int object_i = Find_The_Object_Contour(contours,ROI_mid_p);
-			// // cout<<"p4"<<endl;
-			// // cout<<"1"<<endl;
-			// Mat drawing=Mat::zeros(ROI_gray.size(),CV_8UC3);
-			// // cout<<"object_i:"<<object_i<<endl;
-
-			// // cout<<"2"<<endl;
-			// // int largestcontour=FindTheLargestContour(contours);
-
-			// // for(int i=0;i<contours[largestcontour].size();i++){
-			// // 	cout<<"contours(x,y) ("<<i<<"): "<<contours[largestcontour][i].x<<", "<<contours[largestcontour][i].y<<endl;
-				
-			// // }
-			// // cout<<"3"<<endl;
-			// Scalar color=CV_RGB(255,0,0);
-			// drawContours(ROI,contours,object_i,color,2,8);
-
-			// imshow("drawing", drawing);
-
-			// Point *rp1,*rp2;
-			// rp1=new Point[200];//approx numb
-			// rp2=new Point[200];//approx numb
-
-			// // Point p1[200],p2[200];
-
-			// // p1=new Point[200];
-			// // p2=new Point[200];
-			// // int count_numb=blob(output1,blob_window,p1,p2);
-			// Mat ROI_blob_window;
-			// int count_numb1=blob(ROI_gray,ROI_blob_window,rp1,rp2);
-
-			// if(count_numb1==-100){
-			// 	cout<<"Skip: too much blob"<<endl;
-			// 	continue;
-			// }//segmental fault
-			// Point center_of_object_ROI=draw_rect_box(ROI, rp1, rp2, 20);
-
-			// median_filter(ROI_gray,ROI_gray,7);
-			// cvtColor(ROI_2, ROI_2_gray, CV_BGR2GRAY);
-
-			// double** ROI_integral_image=new double*[ROI_gray.cols+1];
-			// double** ROI_squared_integral_image=new double*[ROI_gray.cols+1];
-
-			// for(int i = 0; i < ROI_gray.cols+1; ++i){
-			// 	ROI_integral_image[i] = new double[ROI_gray.rows+1];
-			// 	ROI_squared_integral_image[i] = new double[ROI_gray.rows+1];
-			// }
-
-			// Mat kuwahara_ROI;
-
-			// kuwahara_ROI=Mat::zeros(ROI_gray.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-
-			// Integral_Gray_Initialize(ROI_gray,ROI_integral_image,ROI_squared_integral_image);//create summed-table to integral_image array.
-   //  		Kuwahara_Filter_Gray_With_Sum_Table(ROI_gray,kuwahara_ROI,ROI_integral_image,ROI_squared_integral_image,5);//Applying kuwahara filter to output using integral_image.
-
-			// /*Memory deallocation*/
-			// for(int i = 0; i < ROI_gray.cols+1; ++i) {
-			// 	delete [] ROI_integral_image[i];
-			// 	delete [] ROI_squared_integral_image[i];
-			// }
-			// delete [] ROI_integral_image;
-			// delete [] ROI_squared_integral_image;
-			// while(true){
-
-			// namedWindow(window_capture_name);
-   //  		namedWindow(window_detection_name);
-	  //   	// Trackbars to set thresholds for HSV values
-	  //   	createTrackbar("Low H", window_detection_name, &low_H, max_value_H, on_low_H_thresh_trackbar);
-	  //   	createTrackbar("High H", window_detection_name, &high_H, max_value_H, on_high_H_thresh_trackbar);
-	  //   	createTrackbar("Low S", window_detection_name, &low_S, max_value, on_low_S_thresh_trackbar);
-	  //   	createTrackbar("High S", window_detection_name, &high_S, max_value, on_high_S_thresh_trackbar);
-	  //   	createTrackbar("Low V", window_detection_name, &low_V, max_value, on_low_V_thresh_trackbar);
-	  //   	createTrackbar("High V", window_detection_name, &high_V, max_value, on_high_V_thresh_trackbar);
-
-			// Mat ROI_hsv;
-			// Mat frame, frame_HSV, frame_threshold;
-			// cvtColor(ROI, ROI_hsv, CV_BGR2HSV);
-			// frame_HSV=ROI_hsv;
-			// inRange(frame_HSV, Scalar(low_H, low_S, low_V), Scalar(high_H, high_S, high_V), frame_threshold);
-			// // imshow(window_capture_name, frame);
-   //      	imshow(window_detection_name, frame_threshold);
-   //      	key=waitKey(1);
-   //      	}
-
-
-			// src_gray=ROI_gray;
-			// src=image2;
-
-
-			// namedWindow( window_name, WINDOW_AUTOSIZE ); // Create a window to display results
-		 //    createTrackbar( trackbar_type,
-		 //                    window_name, &threshold_type,
-		 //                    max_type, Threshold_Demo ); // Create a Trackbar to choose type of Threshold
-		 //    createTrackbar( trackbar_value,
-		 //                    window_name, &threshold_value,
-		 //                    max_value, Threshold_Demo ); // Create a Trackbar to choose Threshold value
-		 //    Threshold_Demo( 0, 0 ); // Call the function to initialize
-			// cout<<"p1"<<endl;
-			// Mat test;
-			// // test=ROI_2_gray-kuwahara_ROI;
-			// test=ROI_2_gray-ROI_gray;
-			// int window_size=0;
-			// for(int x=(window_size/2); x<test.cols-(window_size/2);x++){
-			// 	for(int y=(window_size/2); y<test.rows-(window_size/2);y++){
-			// 		if(Mpixel(test,x,y)>130){
-			// 			Mpixel(test,x,y)=255;
-			// 		}else{
-			// 			Mpixel(test,x,y)=0;
-			// 		}
-			// 	}
-			// }	
-			// thresholding_image(test, 40,false,7);
-			// imshow("test",test);
-
-			// Mat kuwahara_ROI_th;
-			// kuwahara_ROI_th=kuwahara_ROI.clone();
-			// double histogram[256];
-			// int val=binary_histogram(kuwahara_ROI_th,105, histogram);
-			// // if(val>100){
-			// // 	val=val-30;	
-			// // }else if(val<31){
-			// // 	val=val+30;
-			// // }
-			// // }else if(val>=100&&val<150){
-			// // 	val=val-80;
-			// // }
-			// // else if(val>=150&&val<250){
-			// // 	val=val-100;
-			// // }
-			// // if(val>49){
-			// // 	val=val-30;
-			// // }
-			// cout<<"val: "<<val<<endl;
-			// // thresholding_image(kuwahara_ROI_th, val,false,5);
-			// Mat final=test+kuwahara_ROI_th;
-			    // Edge detection
-    		// Canny(kuwahara_ROI, kuwahara_ROI, 50, 200, 3);
-			
-
-			// imshow("kuwahara_ROI_th", kuwahara_ROI_th);
-			// imshow("ROI_gray", ROI_gray);
-			// // imshow("ROI", ROI);
-			// imshow("drawing", drawing);
-			// // imshow("ROI_2", ROI_2);
-			// // imshow("kuwahara_ROI", kuwahara_ROI);
-			// // imshow("temp_output1", temp_output1);
-			// // imshow("temp_output2", temp_output2);
-			// imshow("temp_output", temp_output);
-			// key=waitKey(0);
-			// continue;
-
-
-			// int val=binary_histogram(kuwahara_ROI_th,131, histogram);
-			// if(val>100){
-			// 	val=val-30;	
-			// }else if(val<31){
-			// 	val=val+30;
-			// }
-			// }else if(val>=100&&val<150){
-			// 	val=val-80;
-			// }
-			// else if(val>=150&&val<250){
-			// 	val=val-100;
-			// }
-
-			
-			// cout<<"val:"<<val<<endl;
-			// val=200;
-
-			// thresholding_image(kuwahara_ROI_th, val,false,3);
-			// if(val<150){
-				// thresholding_image(kuwahara_ROI_th, val,false,3);	
-			// }else{
-				// thresholding_image(kuwahara_ROI_th, val,true,3);	
-			// }
-			
-			// median_filter(kuwahara_ROI_th,kuwahara_ROI_th,3);
-
-	// 		std::vector<vector<Point>>contours;
-	// 		// findContours(ROI_gray,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-	// 		// cout<<"p2"<<endl;
-	// 		findContours(final,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-	// 		// cout<<"p3"<<endl;
-	// 		Point ROI_mid_p;
-
-	// 		ROI_mid_p.x=ROI_gray.rows/2;
-	// 		ROI_mid_p.y=ROI_gray.cols/2;
-
-	// 		int object_i= Find_The_Object_Contour(contours,ROI_mid_p);
-	// 		// cout<<"p4"<<endl;
-	// 		// cout<<"1"<<endl;
-	// 		Mat drawing=Mat::zeros(ROI.size(),CV_8UC3);
-	// 		// cout<<"object_i:"<<object_i<<endl;
-
-	// 		// cout<<"2"<<endl;
-	// 		// int largestcontour=FindTheLargestContour(contours);
-
-	// 		// for(int i=0;i<contours[largestcontour].size();i++){
-	// 		// 	cout<<"contours(x,y) ("<<i<<"): "<<contours[largestcontour][i].x<<", "<<contours[largestcontour][i].y<<endl;
-				
-	// 		// }
-	// 		// cout<<"3"<<endl;
-	// 		Scalar color=CV_RGB(255,0,0);
-	// 		drawContours(drawing,contours,object_i,color,2,8);
-	// 		cout<<"object_i: "<<object_i<<endl;
-	// 		if(object_i!=-1){
-	// 			cout<<"contour size: "<<contours[object_i].size()<<endl;
-	// 		}
-			
-
-	// 		imshow("ROI_gray", ROI_gray);
-	// 		imshow("final", final);
-	// 		imshow("kuwahara_ROI_th", kuwahara_ROI_th);
-	// 		imshow("kuwahara_ROI", kuwahara_ROI);
-	// 		imshow("drawing", drawing);
-			
-	// 		// cout<<"p5"<<endl;
-
-
-			string saving_directory="ROI_images/";
-			string s = glob_result.gl_pathv[i];
-			string delimiter = ".";
-			string token = s.substr(0, s.find(delimiter)); 
-
-			string prev_name=glob_result.gl_pathv[i];
-			string str_prev_name=prev_name.substr(prev_name.size()-8,4);
-
-			string path_ROI=saving_directory+str_prev_name+"_ROI.jpg";
-			string path_original=saving_directory+str_prev_name+"_original.jpg";
+			// string path_ROI=saving_directory+str_prev_name+"_ROI.jpg";
+			// string path_original=saving_directory+str_prev_name+"_original.jpg";
 
 
 
@@ -2336,11 +1871,11 @@ int run_kuwahara(int argc,char *argv[]){
 	// int prev_img_numb=stoi(str_prev_name);
 	// int cur_img_numb=stoi(str_cur_name);
 	// int diff_numb=cur_img_numb-prev_img_numb;
-			cout<<"path_ROI: "<<path_ROI<<endl; 
-			// imwrite( path_ROI, ROI.get_ROI_img() );
+			// cout<<"path_ROI: "<<path_ROI<<endl; 
+			// imwrite( path_ROI, ku_ROI.get_drawing() );
 			// imwrite( path_original, sample2.get_original_img() );
-			key=waitKey(0);
-			continue;
+			// key=waitKey(0);
+			
 
 			
 
@@ -2386,203 +1921,11 @@ int run_kuwahara(int argc,char *argv[]){
 			// delete p1;
 			// delete p2;
 		}
+		myfile.close();
 
 
 		exit(1);//point to exit
 
-		///////////////////////////////////
-
-  //       Mat3b image1;
-  //       Mat gray_image1;
-	   	
-	 //   	image1=imread(argv[2],1);
-	 //   	if(!image1.data){printf("Could not open the file\n"); exit(0);}
-		// cvtColor(image1,gray_image1, COLOR_BGR2GRAY);//color image1 to gray scale
-	 //   	/*****************/
-
-	 //   	/*The Second image process*/
-  //  		Mat3b image2;
-  //  		Mat gray_image2;
-  //  		Mat output;
-  //  		Mat3b final_output;
-  //  		image2=imread(argv[3],1);
-  //  		if(!image2.data){printf("Could not open the file\n"); exit(0);}
-  //  		cvtColor(image2,gray_image2, COLOR_BGR2GRAY);//color image2 to gray scale
-		
-		
-		// output=Mat::zeros(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-		// final_output=Mat::zeros(gray_image2.size(),CV_8UC3);//initialize the value of final_output metrices to zero
-
-		// gray_image2=Mat::ones(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-		// Mat gray_image3=Mat::ones(gray_image2.size(),IMREAD_GRAYSCALE);//initialize the value of output metrices to zero
-		// gray_image2=gray_image2+gray_image3;
-
-
-
-
-		// // //////////////////////////////////////
-		// // //Kuwahara filter using Summed-table//
-		// // //////////////////////////////////////
-
-		// // /*Memory Allocation*/
-		// // double** integral_image=new double*[gray_image2.cols+1];
-		// // double** squared_integral_image=new double*[gray_image2.cols+1];
-		// // for(int i = 0; i < gray_image2.cols+1; ++i){
-		// // 	integral_image[i] = new double[gray_image2.rows+1];
-		// // 	squared_integral_image[i] = new double[gray_image2.rows+1];
-		// // }
-		// // /*********************/
-
-		// // Integral_Gray_Initialize(gray_image2,integral_image,squared_integral_image);//create summed-table to integral_image array.
-		// // Integral_test(gray_image2,integral_image,squared_integral_image);//create summed-table to integral_image array.
-		
-		// // Kuwahara_Filter_Gray_Without_Sum_Table(gray_image2,output,7);//Applying kuwahara filter to output using integral_image.
-		
-		// // /*Memory deallocation*/
-		// // for(int i = 0; i < gray_image1.cols+1; ++i) {
-		// // 	delete [] integral_image[i];
-		// // 	delete [] squared_integral_image[i];
-		// // }
-		// // delete [] integral_image;
-		// // delete [] squared_integral_image;
-		// // /***************/
-		
-		// // ///////////////////////////////////////
-
-
-		
-
-
-		// //////////////////////////////////////
-		// //Kuwahara filter using Summed-table with colour//
-		// //////////////////////////////////////
-
-		// /*Memory Allocation*/
-		// double** integral_image_R=new double*[gray_image2.cols+1];
-		// double** squared_integral_image_R=new double*[gray_image2.cols+1];
-		// double** integral_image_G=new double*[gray_image2.cols+1];
-		// double** squared_integral_image_G=new double*[gray_image2.cols+1];
-		// double** integral_image_B=new double*[gray_image2.cols+1];
-		// double** squared_integral_image_B=new double*[gray_image2.cols+1];
-
-		// for(int i = 0; i < gray_image2.cols+1; ++i){
-		// 	integral_image_R[i] = new double[gray_image2.rows+1];
-		// 	squared_integral_image_R[i] = new double[gray_image2.rows+1];
-		// 	integral_image_G[i] = new double[gray_image2.rows+1];
-		// 	squared_integral_image_G[i] = new double[gray_image2.rows+1];
-		// 	integral_image_B[i] = new double[gray_image2.rows+1];
-		// 	squared_integral_image_B[i] = new double[gray_image2.rows+1];
-		// }
-		// /*********************/
-		// Mat3b color_output;
-		// color_output=Mat::zeros(gray_image2.size(),CV_8UC3);//initialize the value of final_output metrices to zero
-		// Integral_Color_Initialize(image2,integral_image_B,integral_image_G,integral_image_R,squared_integral_image_B,squared_integral_image_G,squared_integral_image_R);//create summed-table to integral_image array.
-		// Kuwahara_Filter_Color_With_Sum_Table(image2,color_output,integral_image_B,integral_image_G,integral_image_R,squared_integral_image_B,squared_integral_image_G,squared_integral_image_R,23);//Applying kuwahara filter to output using integral_image.
-		
-
-
-		// // color_output
-		// Mat3b temp_output=Mat::zeros(image1.size(),CV_8UC3);//initialize the value of final_output metrices to zero
-		// for(int i = 0; i < color_output.cols; ++i){
-		// 	for(int j = 0; j < color_output.rows; ++j){
-		// 		// if(Mpixel(filtered_image,x,y)!=0){//when pixel is not zero
-		// 			pixelB(temp_output,i,j)=pixelB(image1,i,j);
-		// 			pixelG(temp_output,i,j)=pixelG(image1,i,j);
-		// 			pixelR(temp_output,i,j)=pixelR(image1,i,j);
-		// 		// }
-
-		// 	}
-		// }
-
-		// // Integral_Color_Initialize(image2,integral_image_R,integral_image_B,integral_image_G,squared_integral_image_R,squared_integral_image_B,squared_integral_image_G);//create summed-table to integral_image array.
-		// // Kuwahara_Filter_Color_With_Sum_Table(image2,color_output,integral_image_R,integral_image_B,integral_image_G,squared_integral_image_R,squared_integral_image_B,squared_integral_image_G,7);//Applying kuwahara filter to output using integral_image.
-		// /*Memory deallocation*/
-		// for(int i = 0; i < gray_image1.cols+1; ++i) {
-		// 	delete [] integral_image_R[i];
-		// 	delete [] squared_integral_image_R[i];
-		// 	delete [] integral_image_G[i];
-		// 	delete [] squared_integral_image_G[i];
-		// 	delete [] integral_image_B[i];
-		// 	delete [] squared_integral_image_B[i];
-		// }
-		// delete [] integral_image_R;
-		// delete [] squared_integral_image_R;
-		// delete [] integral_image_G;
-		// delete [] squared_integral_image_G;
-		// delete [] integral_image_B;
-		// delete [] squared_integral_image_B;
-		// /***************/
-		
-		// ///////////////////////////////////////
-
-		// imwrite("temp_output.jpg", temp_output);
-
-		// ////////////////////////////////////////
-		// //Kuwahara filter without Summed-table//
-		// ////////////////////////////////////////
-		
-		// // Filter_Gray(gray_image2,output,15);
-		
-		// ///////////////////////////////////////
-		// namedWindow("image2",WINDOW_NORMAL);
-		// namedWindow("color_output",WINDOW_NORMAL);
-		// resizeWindow("color_output", 1200,1200);
-		// resizeWindow("image2", 1200,1200);
-		// imshow("color_output" ,color_output);
-		// imshow("image2" ,image2);
-		// // imwrite( "lee_eun.jpg", color_output );
-		// waitKey(0);
-		// exit(0);
-
-		// /*subtraction process between The first image and the second image*/
-		// for(int x=0; x<gray_image2.cols;x++){
-		// 	for(int y=0; y<gray_image2.rows;y++){
-		// 		// Mpixel(output,x,y)=(float)Mpixel(gray_image1,x,y)-(float)Mpixel(gray_image2,x,y);
-		// 		Mpixel(output,x,y)=(float)Mpixel(gray_image2,x,y)-(float)Mpixel(gray_image1,x,y);
-		// 		// cout<<"x:"<<x<<" y: "<<y<<endl;
-
-		// 		if(Mpixel(output,x,y)<100){//thresholding
-		// 			Mpixel(output,x,y)=0;
-		// 		}
-		// 	}
-		// }
-
-
-		// /*****************************************************************/
-
-		// /*Load the subtracted area to final_output from source*/
-		// for(int x=0; x<gray_image2.cols;x++){
-		// 	for(int y=0; y<gray_image2.rows;y++){
-		// 		if((int)Mpixel(output,x,y)!=0){
-		// 			pixelB(final_output,x,y)=pixelB(image2,x,y);
-		// 			pixelG(final_output,x,y)=pixelG(image2,x,y);
-		// 			pixelR(final_output,x,y)=pixelR(image2,x,y);
-		// 		}
-
-		// 	}
-		// }
-
-
-		// // Scalar color=CV_RGB(255,0,0);
-		// // std::vector<vector<Point>>contours;
-		// // findContours(output,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-
-        
-  // //       int largestcontour=FindTheLargestContour(contours);
-  // //       Mat drawing=Mat::zeros(output.size(),CV_8UC3);
-		// // drawContours(drawing,contours,largestcontour,color,2,8);
-		// /*******************************************************/
-
-  //   	/*final_output show*/
-  //   	imshow("final_output" ,final_output);
-  //   	// imshow("filtered image" ,output);
-  //   	// imshow("gray_image2" ,gray_image2);
-  //   	// imshow("drawing" ,drawing);
-
-
-
-  //   	waitKey(0);
-    	/*************/
 
 	}else{//dynamic mode with camera
 		/*Information*/
