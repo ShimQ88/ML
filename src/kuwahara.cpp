@@ -1671,7 +1671,151 @@ void Filter_Gray(Mat image1, Mat image2, int window_size){
 	}
 
 }
+int run_filtering(int argc,char *argv[]){
+	if(argc==3){
+		int size=strlen(argv[2]);
+		cout<<"size:"<<size<<endl;
+		char path[size+2];
 
+		strcpy(path,argv[2]);
+		strcat(path,"/*");
+		cout<<"path:"<<path<<endl;
+
+		glob_t glob_result;
+		glob(path,GLOB_TILDE,NULL,&glob_result);
+		
+
+			ofstream save_contour;
+			ofstream save_name;
+		for(unsigned int i=0; i<glob_result.gl_pathc; i++){
+			
+			cout << glob_result.gl_pathv[i] << endl;
+			int size_new=sizeof(glob_result.gl_pathv[i]);
+			char new_path[size_new+2];
+			strcpy(new_path, glob_result.gl_pathv[i]);
+			strcat(new_path,"/*");
+			
+			glob_t glob_sub_result;
+			glob(new_path,GLOB_TILDE,NULL,&glob_sub_result);
+			Mat image[glob_sub_result.gl_pathc-2];//except to contour and name files
+			string path_contour;
+			string path_name;
+			ifstream file_contour;
+			ifstream file_name;
+			for(unsigned int j=0; j<glob_sub_result.gl_pathc-2; j++){
+
+				if(j==0){
+					find_contour_and_name_file(glob_sub_result, &path_contour, &path_name);
+					file_contour.open(path_contour);
+					file_name.open(path_name);
+					if(file_contour.is_open()==true){
+						cout<<"success to load contour file"<<endl;
+					}else{
+						cout<<"fail to load contour file"<<endl;
+					}
+
+					if(file_name.is_open()==true){
+						cout<<"success to load name file"<<endl;
+					}else{
+						cout<<"fail to load name file"<<endl;
+					}
+				}
+
+				if(j==0&&i==0){
+					
+
+					save_contour.open("ROI_success/final_contour.txt");
+					save_name.open("ROI_success/final_name.txt");
+				}
+				
+
+				
+				string contour_line;
+				string name_line;
+				getline(file_contour, contour_line);
+				getline(file_name, name_line);
+				cout<<"contour_line: "<<contour_line<<endl;
+				cout<<"name_line: "<<name_line<<endl;
+				// cout << glob_sub_result.gl_pathv[j] << endl;
+				string name=glob_sub_result.gl_pathv[j];
+				int delimiter=0;
+				while(delimiter!=-1){
+			  		delimiter = name.find('/');
+			  		name = name.substr(delimiter+1);
+			  	}
+			  	if(name.compare(name_line)==0){
+			  		cout<<"match with file"<<endl;
+			  	}else{
+			  		cout<<"not match with file"<<endl;
+			  		cout<<"terminate program"<<endl;
+			  		exit(1);
+			  	}
+				// if(file_contour.is_open()){
+				//     while ( getline (file_contour,line) ){
+				//       cout << line << '\n';
+				//     }
+				//     file_contour.close();
+				// }
+				// for(unsigned int z=0; z<glob_sub_result.gl_pathc; z++){
+				// 	int delimiter=0;
+				// 	string file_name=glob_sub_result.gl_pathv[z];
+				// 	while(delimiter!=-1){
+				//   		delimiter = file_name.find('/');
+				//   		file_name = file_name.substr(delimiter+1);
+				//   	}
+				// 	// string contour[2];
+
+				// 	delimiter = file_name.find('.');
+				// 	string type= file_name.substr(delimiter+1);
+				// 	if(type.compare("txt")==0){
+				// 		delimiter = file_name.find('_');
+				// 		string test=file_name.substr(0,delimiter);
+				// 		if(test.compare("contour")==0){
+				// 			path_contour=glob_sub_result.gl_pathv[z];
+						
+				// 		}else if(test.compare("name")==0){
+				// 			path_name=glob_sub_result.gl_pathv[z];
+				// 		}
+						
+				// 	}
+					
+				// }
+
+
+				// cout<<"path_contour: "<<path_contour<<endl;
+				// cout<<"path_name: "<<path_name<<endl;
+
+				// cout << glob_sub_result.gl_pathv[j] << endl;
+				image[j]=imread(glob_sub_result.gl_pathv[j],1);
+				imshow("image", image[j]);
+				int key=waitKey(0);
+				if(key==10){//when press enter
+					save_contour << contour_line;
+					save_contour << endl;
+					save_name << name_line;
+					save_name << endl;
+					string path_ROI="ROI_success/"+name;
+					imwrite( path_ROI, image[j]);
+				}else if(key==255){//when press delete
+
+				}else{
+					cout<<"you press wrong button"<<endl;
+					cout<<"try again"<<endl;
+					j--;
+				}
+
+				cout<<"key: "<<key<<endl;
+
+			}
+			file_contour.close();
+			file_name.close();
+			
+		}
+		save_contour.close();
+			save_name.close();
+			
+	}
+}
 
 int run_kuwahara(int argc,char *argv[]){
 	/*The First image*/
@@ -1705,6 +1849,8 @@ int run_kuwahara(int argc,char *argv[]){
 		int key=0;
 		int folder_numb=0;
 		int file_numb=0;
+		ofstream contour_file;
+		ofstream name_file;
 		for(unsigned int i=0; i<glob_result.gl_pathc-1; ++i){
 			cout<<"glob_result.gl_pathc: "<<glob_result.gl_pathc<<endl;
 		// for(unsigned int i=0; i<1; ++i){
@@ -1762,6 +1908,10 @@ int run_kuwahara(int argc,char *argv[]){
 		  	}
 		  	Kuhawara_ROI2 ku_ROI;
 		  	int loop_break=0;
+
+		  	
+
+
 		  	while(true){
 		  		cout<<"index: "<<loop_break<<endl;
 			  	ku_ROI.main(ku,total_numb,loop_break);
@@ -1771,6 +1921,7 @@ int run_kuwahara(int argc,char *argv[]){
 			  	// Mat *ROI_real=new Mat[total_numb];
 			  	// ROI_t=ku_ROI.get_samp_output();
 			  	// ROI_real=ku_ROI.get_ROI_img();
+			  	// contour_file << "haha"<<endl;
 			  	if(ku_ROI.get_initalization_result()==false){
 
 			  	}else{
@@ -1783,27 +1934,73 @@ int run_kuwahara(int argc,char *argv[]){
 				  	// }
 				  	// imshow("0", ku_ROI.get_merged_samp_output2());
 			  		// imshow("merged", ku_ROI.get_merged_samp_output());
-			  		// imshow("drawing", ku_ROI.get_drawing());
+			  		// imshow("drawing", ku_ROI.get_main_ROI_img());
 			  		// imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
 			  		// // imshow("4", ROI_real[loop_break]);
 			  		// key=waitKey(0);
-
-			  		if(file_numb>10){
+			  		int the_number_of_file_in_folder=50;
+			  		if(file_numb>=the_number_of_file_in_folder){
 			  			folder_numb++;
 			  		}
 			  		cout<<"p2"<<endl;
+
+
 			  		string str_folder_numb=to_string(folder_numb);
 			  		string saving_directory1="ROI_images/ROI/"+str_folder_numb+"/";
 				  	string saving_directory2="ROI_images/Contour/"+str_folder_numb+"/";
 
-				  	if(folder_numb==0){
+				  	if(folder_numb==0&&file_numb==0){
 			  			creating_folder(saving_directory1);
 			  			creating_folder(saving_directory2);
+
+			  			string contour_dir="ROI_images/Contour/"+str_folder_numb+"/contour_"+str_folder_numb+".txt";
+			  			
+			  			contour_file.open(contour_dir);			  			
+			  			if (contour_file.is_open()){
+						    
+						}else{
+							cout << "Unable to open file";
+							exit(0);
+						}
+
+						string name_dir="ROI_images/Contour/"+str_folder_numb+"/name_"+str_folder_numb+".txt";
+
+						name_file.open(name_dir);			  			
+			  			if (name_file.is_open()){
+						    
+						}else{
+							cout << "Unable to open file";
+							exit(0);
+						}
+
 			  		}
-			  		if(file_numb>10){
+			  		if(file_numb>=the_number_of_file_in_folder){
 			  			creating_folder(saving_directory1);
 			  			creating_folder(saving_directory2);
 			  			file_numb=0;
+			  			contour_file.close();
+			  			name_file.close();
+			  			
+			  			string contour_dir="ROI_images/Contour/"+str_folder_numb+"/contour_"+str_folder_numb+".txt";
+			  			contour_file.open(contour_dir);
+			  			if (contour_file.is_open()){
+						    
+						}else{
+							cout << "Unable to open file";
+							exit(0);
+						}
+
+						string name_dir="ROI_images/Contour/"+str_folder_numb+"/name_"+str_folder_numb+".txt";
+						name_file.open(name_dir);
+			  			if (name_file.is_open()){
+						    
+						}else{
+							cout << "Unable to open file";
+							exit(0);
+						}
+
+			  			cout<<"file close"<<endl;
+			  			
 			  		}
 
 				  	string file_type1="_ROI.jpg";
@@ -1811,18 +2008,22 @@ int run_kuwahara(int argc,char *argv[]){
 			  		string file_name = glob_result.gl_pathv[i+loop_break];
 			  	
 			  		write_img(ku_ROI.get_main_ROI_img() ,saving_directory1,file_name,file_type1);
-			  		write_img(ku_ROI.get_ROI_and_drawing() ,saving_directory2,file_name,file_type2);
+			  		// write_img(ku_ROI.get_merged_samp_output(), saving_directory1, file_name, file_type1);
+			  		string saving_name=write_img(ku_ROI.get_ROI_and_drawing() ,saving_directory2,file_name,file_type2);
+			  		saving_name=saving_name+'\n';
+			  		
 			  		file_numb++;
 			  		
 					
 			  		
 			  		string CE_val=ku_ROI.get_contour_txt(); 
+
+			  		
+			  		contour_file << CE_val;
+
+			  		name_file << saving_name;
+
 			  		myfile << CE_val;
-			  		getchar();
-			  		
-			  		
-			  		
-			  		
 			  	}
 			  	
 			  	
@@ -1834,7 +2035,7 @@ int run_kuwahara(int argc,char *argv[]){
 			  	}
 			  	
 		  	}
-		  	// i=i+total_numb-1;
+		  	i=i+total_numb-1;
 		  	
 		  	// continue;
 		  	// string saving_directory="ROI_images/";

@@ -19,6 +19,7 @@ using namespace cv;
 using namespace cv::ml;
 
 extern int run_kuwahara(int argc,char *argv[]);
+extern int run_filtering(int argc,char *argv[]);
 extern void run_contour(char* argv);
 extern bool load_and_save_ml( const string& data_filename,
                       const string& filename_to_save,
@@ -115,6 +116,10 @@ int main(int argc, char *argv[]){
             numb_data=j;
         }else if(strcmp(argv[i],"-detect") == 0){
             run_kuwahara(argc,argv);
+            exit(1);
+
+        }else if(strcmp(argv[i],"-filtering") == 0){
+            run_filtering(argc,argv);
             exit(1);
         }
 

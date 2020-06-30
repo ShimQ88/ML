@@ -4,7 +4,6 @@
 #include <sys/types.h> 
 #include <sys/stat.h>
 #include <unistd.h>
-// #include <stdlib.h> 
 #include <stdlib.h>
 
 // System Headers
@@ -34,6 +33,44 @@ using namespace chrono;
 #define pixelG(image,x,y) image.data[image.step[0]*y+image.step[1]*x+1]	//Green color space
 #define pixelR(image,x,y) image.data[image.step[0]*y+image.step[1]*x+2]	//Red color space
 
+bool find_contour_and_name_file(glob_t glob_sub_result, string *path_contour, string *path_name){
+	bool is_find_contour_path=false;
+	bool is_find_name_path=false;
+
+	for(unsigned int z=0; z<glob_sub_result.gl_pathc; z++){
+		int delimiter=0;
+		string file_name=glob_sub_result.gl_pathv[z];
+		while(delimiter!=-1){
+	  		delimiter = file_name.find('/');
+	  		file_name = file_name.substr(delimiter+1);
+	  	}
+		// string contour[2];
+
+		delimiter = file_name.find('.');
+		string type= file_name.substr(delimiter+1);
+		if(type.compare("txt")==0){
+			delimiter = file_name.find('_');
+			string test=file_name.substr(0,delimiter);
+			if(test.compare("contour")==0){
+				*path_contour=glob_sub_result.gl_pathv[z];
+				is_find_contour_path=true;
+			
+			}else if(test.compare("name")==0){
+				*path_name=glob_sub_result.gl_pathv[z];
+				is_find_name_path=true;
+			}
+			
+		}
+		
+	}
+	if(is_find_contour_path==true&&is_find_name_path==true){
+		return true;//find both of path
+	}else{
+		return false;//couldn't find both of path
+	}
+}
+
+
 bool creating_folder(string folder_name){
 	int check;
 	int size = folder_name.length(); 
@@ -54,7 +91,7 @@ bool creating_folder(string folder_name){
 }
 
 
-void write_img(Mat saving_img, string folder_name, string file_name, string file_type){
+string write_img(Mat saving_img, string folder_name, string file_name, string file_type){
   	int delimiter=0;
   	while(delimiter!=-1){
   		delimiter = file_name.find('/');
@@ -63,9 +100,11 @@ void write_img(Mat saving_img, string folder_name, string file_name, string file
   	file_name = file_name.substr(0,file_name.find('.'));
   	cout<<"file_name: "<<file_name<<endl;
 
+  	string output_name=file_name+file_type;
 	string path_ROI=folder_name+file_name+file_type;
 
 	imwrite( path_ROI, saving_img);
+	return output_name;
 }
 
 
@@ -122,7 +161,10 @@ void Filter_Gray_Integral4(Mat image1, Mat image2, double** integral_image,
 void Kuwahara_Filter_Gray_Without_Sum_Table(Mat source_image, Mat output_image, int window_size);
 
 void Filter_Gray(Mat image1, Mat image2, int window_size);
+
 int run_kuwahara(int argc,char *argv[]);
+
+int run_filtering(int argc,char *argv[]);
 
 class Kuhawara
 {
@@ -332,6 +374,7 @@ public:
 			Scalar color=CV_RGB(255,0,0);
 			drawContours(drawing,contours,object_i,color,2,8);
 			drawContours(ROI_and_drawing,contours,object_i,color,2,8);
+			drawContours(merged_samp_output,contours,object_i,color,2,8);
 
 			vector<float>CE;
 			cout<<"object_i: "<<object_i<<endl;
@@ -345,6 +388,8 @@ public:
 				// strcat(contour_txt ,st );
 				if(i==9){
 					contour_txt=contour_txt+"\n";
+					cout<<"enter"<<endl;
+
 					// strcat(contour_txt, "\n");
 				}else{
 					contour_txt=contour_txt+",";
