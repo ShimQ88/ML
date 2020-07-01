@@ -27,11 +27,79 @@ using namespace chrono;
 
 
 
-
 #define Mpixel(image,x,y) ((uchar *)((image).data +(y)*((image).step)))[(x)*((image).channels())]//gray color space
 #define pixelB(image,x,y) image.data[image.step[0]*y+image.step[1]*x]	//Blue color space
 #define pixelG(image,x,y) image.data[image.step[0]*y+image.step[1]*x+1]	//Green color space
 #define pixelR(image,x,y) image.data[image.step[0]*y+image.step[1]*x+2]	//Red color space
+
+int determine_frame_size(Mat input, Point obj_center, int frame_size, int append_size ){
+	bool is_tri=false;
+	// cout<<"input.size(): "<<input.size()<<endl;
+	// cout<<"obj_center.x: "<<obj_center.x<<endl;
+	// cout<<"obj_center.y: "<<obj_center.y<<endl;
+
+ 	if( (obj_center.x-frame_size < 0) || (obj_center.y-frame_size < 0 ) ){//the case1 of out of frame boundary
+ 		// cout<<"return case1"<<endl;
+ 		return -1;
+	}
+
+	if( (obj_center.x+frame_size > input.cols) || (obj_center.y+frame_size > input.rows) ){//the case2 of out of frame boundary
+		// cout<<"return case2"<<endl;
+ 		return -2;
+	}
+
+	while(true){
+		if( (obj_center.x-frame_size<=0)||(obj_center.y-frame_size<=0) ){//The frame size bigger than the left and top side margin so finish expanding more frame size
+			// cout<<"return case3"<<endl;
+			return frame_size*2;
+		}
+
+		if( (obj_center.x+frame_size >= input.cols)||(obj_center.y+frame_size >= input.rows) ){//The frame size bigger than the left and top side margin so finish expanding more frame size
+			// cout<<"return case4"<<endl;
+			return frame_size*2;
+		}
+
+		for(int k=obj_center.x-frame_size;k<obj_center.x+frame_size;k++){			
+			for(int l=obj_center.y-frame_size;l<obj_center.y+frame_size;l++){
+
+				// cout<<"k: "<<k<<endl;
+				// cout<<"l: "<<l<<endl;
+				// cout<<"obj_center.x: "<<obj_center.x<<endl;
+				// cout<<"obj_center.y: "<<obj_center.y<<endl;
+				if( (k==obj_center.x-frame_size)||(k==obj_center.x+frame_size-1)||(l==obj_center.y-frame_size)||(l==obj_center.y+frame_size-1) ){
+					// Point t_pp;
+					// t_pp.x=k;
+					// t_pp.y=l;
+					// circle(subtracted_frame,t_pp,3,Scalar(255,255,255));
+					if((int)Mpixel(input,k,l)!=0 ){
+						is_tri=true;
+					}
+				}
+
+
+			}	
+		}
+
+		
+		
+		frame_size=frame_size+append_size;
+
+		// cout<<"frame_size: "<<frame_size<<endl;
+		if(is_tri==false){
+			// cout<<"normal case: "<<endl;
+			// cout<<"frame_size: "<<frame_size*2<<endl;
+			break;
+		}
+		is_tri=false;
+
+		if(frame_size>=250){//maximum size
+			return frame_size*2;
+			cout<<"error for size"<<endl;
+		}
+	}
+	return frame_size*2;
+}
+
 
 bool find_contour_and_name_file(glob_t glob_sub_result, string *path_contour, string *path_name){
 	bool is_find_contour_path=false;
@@ -40,12 +108,12 @@ bool find_contour_and_name_file(glob_t glob_sub_result, string *path_contour, st
 	for(unsigned int z=0; z<glob_sub_result.gl_pathc; z++){
 		int delimiter=0;
 		string file_name=glob_sub_result.gl_pathv[z];
+		/*process extract the file name*/
 		while(delimiter!=-1){
 	  		delimiter = file_name.find('/');
 	  		file_name = file_name.substr(delimiter+1);
 	  	}
-		// string contour[2];
-
+	  	/*********************************/
 		delimiter = file_name.find('.');
 		string type= file_name.substr(delimiter+1);
 		if(type.compare("txt")==0){
@@ -59,10 +127,9 @@ bool find_contour_and_name_file(glob_t glob_sub_result, string *path_contour, st
 				*path_name=glob_sub_result.gl_pathv[z];
 				is_find_name_path=true;
 			}
-			
 		}
-		
 	}
+
 	if(is_find_contour_path==true&&is_find_name_path==true){
 		return true;//find both of path
 	}else{
@@ -85,7 +152,7 @@ bool creating_folder(string folder_name){
         printf("The folder %s Directory created\n", dirname);
         return true;
     }else{
-    	printf("Fail to create %s Directory\n", dirname);
+    	printf("Fail to create %s Directory or the folder %s exist\n ", dirname, dirname);
         return false;
     }
 }
@@ -245,11 +312,12 @@ class Kuhawara_ROI2
 
 private:
 	bool is_initialize_success;
+	
 	Mat *ROI;
 	Mat *samp_output;
 	Mat merged_samp_output;
 	Mat merged_samp_output2;
-	Mat main_ROI;
+	Mat target_ROI;
 	Mat ROI_and_drawing;
 	string contour_txt;
 	
@@ -259,7 +327,7 @@ private:
 	Mat drawing;
 	Mat *some_temp_output;
 
-	Mat temp_output;
+	Mat subtracted_frame;
 
 	Point *p_start_roi_window;
 	Point *p_end_roi_window;
@@ -276,18 +344,20 @@ private:
 public:
 	Kuhawara_ROI2(){
 		ROI_and_drawing=Mat::zeros(cv::Size(50,50),CV_8UC3);
-		main_ROI=Mat::zeros(cv::Size(50,50),CV_8UC3);
+		target_ROI=Mat::zeros(cv::Size(50,50),CV_8UC3);
 
 	}
 	void main(Kuhawara *image, int total, int target_index){
 		
 		total_numb=total;//total size storing
+		
+		subtracted_frame=sub_prev_and_next_images(image, target_index);
 
-		temp_output=sub_prev_and_next_images(image, target_index);
+		// thresholding_image(subtracted_frame, 50,true,0);
+		cv::threshold(subtracted_frame, subtracted_frame, 0, 255, CV_THRESH_BINARY | THRESH_OTSU);
+		median_filter(subtracted_frame,subtracted_frame,7);
 
-		// thresholding_image(temp_output, 50,true,0);
-		cv::threshold(temp_output, temp_output, 0, 255, CV_THRESH_BINARY | THRESH_OTSU);
-		median_filter(temp_output,temp_output,7);
+		
 
 		p_start_roi_window=new Point[200];//approx numb
 		p_end_roi_window=new Point[200];//approx numb
@@ -295,8 +365,8 @@ public:
 		blob_window=Mat::zeros(image[target_index].get_ori_size_img(),CV_8UC3);//default size initializing
 
 		// cout<<"THis is point 2"<<endl;
-		int count_numb=blob(temp_output, blob_window, p_start_roi_window, p_end_roi_window);
-
+		int count_numb=blob(subtracted_frame, blob_window, p_start_roi_window, p_end_roi_window);
+		
 		// cout<<"THis is point 2-1"<<endl;
 		if(count_numb==-100){
 			cout<<"Skip: too much blob"<<endl;
@@ -305,11 +375,25 @@ public:
 		}//segmental fault
 
 		// cout<<"This is point 2-2"<<endl;
+		cout<<"pp1"<<endl;
 		p_center_of_object=draw_rect_box(image[target_index].get_original_img(), p_start_roi_window, p_end_roi_window, 200);
+		cout<<"pp2"<<endl;
 
-		int cropping_size=detemine_frame_size(temp_output,20,20);
+		
+		/*process cropping image*/
+		int cropping_size=determine_frame_size(subtracted_frame,p_center_of_object,20,20);
+		/*error section*/
+		//error==-1 obj_center.x-frame_size or obj_center.y-frame_size is less than the minimum size of frame.
+		//( min=0 )
+		//error==-2 obj_center.x+frame_size or obj_center.y+frame_size is bigger than the maximum size of frame.
+		//(max= input.cols or input.rows)
+		if(cropping_size==-1||cropping_size==-2){
+			cout<<"sizeing error"<<endl;
+			is_initialize_success=false;
+			return;
+		}
+		/*process cropping image*/
 		cout<<"framesize: "<<cropping_size<<endl;
-
 
 		Kuhawara temp_ku[total_numb];
 		samp_output = new Mat[total_numb-1];
@@ -321,8 +405,8 @@ public:
 		}
 		// cout<<"THis is point 4"<<endl;
 		int temp_i=0;
-		main_ROI=ROI[target_index];
-		ROI_and_drawing=main_ROI.clone();
+		target_ROI=ROI[target_index];
+		ROI_and_drawing=target_ROI.clone();
 
 		bool the_first_merge=false;
 		for(int i=0;i<total_numb;i++){			
@@ -363,10 +447,12 @@ public:
 		findContours(merged_samp_output,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 
 		int object_i = Find_The_Object_Contour(contours,ROI_mid_p);
+		
 		if(object_i==-1){
 			is_initialize_success=false;
 			cout<<"contour fail"<<endl;
 			contour_txt="";
+			return;
 		}else{
 			// // cout<<"p4"<<endl;
 			// // cout<<"1"<<endl;
@@ -409,15 +495,10 @@ public:
 	}
 	
 	bool get_initalization_result(){return is_initialize_success;}
-	// int get_object_i(){return object_i;}
 	Mat* get_ROI_img(){return ROI;}
-	Mat get_main_ROI_img(){return main_ROI;}
-	// Mat get_temp_output1(){return temp_output1;}
-	// Mat get_temp_output2(){return temp_output2;}
-	// Mat get_temp_output(){return temp_output;}
+	Mat get_target_ROI_img(){return target_ROI;}
 	Mat get_drawing(){return drawing;}
 	Mat sub_prev_and_next_images(Kuhawara *image, int target){
-		
 		Mat final_output;
 		if(target==0){
 			final_output = image[target+1].get_kuhawara_img() - image[target].get_kuhawara_img();
@@ -432,40 +513,59 @@ public:
 
 		return final_output;
 	}
-	int detemine_frame_size(Mat input, int s_size, int append_size ){
-		bool is_tri=false;
-		//size process
-		while(true){
-			for(int k=p_center_of_object.x-s_size;k<p_center_of_object.x+s_size;k++){
-				for(int l=p_center_of_object.y-s_size;l<p_center_of_object.y+s_size;l++){
-					if( (k==p_center_of_object.x-s_size)||(k==p_center_of_object.x+s_size-1)||(l==p_center_of_object.y-s_size)||(l==p_center_of_object.y+s_size-1) ){
-						Point t_pp;
-						t_pp.x=k;
-						t_pp.y=l;
-						// circle(temp_output,t_pp,3,Scalar(255,255,255));
-						if((int)Mpixel(input,k,l)!=0 ){
-							is_tri=true;
-						}
-					}
 
-				}			
-			}
-			s_size=s_size+append_size;
-			if(is_tri==false){
-				break;
-			}
-			is_tri=false;
-			if(s_size>250){
-				return s_size*2;
-				cout<<"error for size"<<endl;
-			}
-		}
-		return s_size*2;
-	}
+	// int detemine_frame_size(Mat input, int s_size, int append_size ){
+	// 	bool is_tri=false;
+	// 	//size process
+	// 	// imshow("f",input);
+	// 	// int key=waitkey(0);
+	// 	cout<<"input.size(): "<<input.size()<<endl;
+	// 	// cout<<"input.cols: "<<input.cols<<endl;
+	// 	// cout<<"input.rows: "<<input.rows<<endl;
+	// 	cout<<"p_center_of_object.x: "<<p_center_of_object.x<<endl;
+	// 	cout<<"p_center_of_object.y: "<<p_center_of_object.y<<endl;
+	// 	// getchar();
+	// 	while(true){
+	// 		for(int k=p_center_of_object.x-s_size;k<p_center_of_object.x+s_size;k++){
+	// 			for(int l=p_center_of_object.y-s_size;l<p_center_of_object.y+s_size;l++){
+	// 				// cout<<"k: "<<k<<endl;
+	// 				// cout<<"l: "<<l<<endl;
+	// 				// cout<<"p_center_of_object.x: "<<p_center_of_object.x<<endl;
+	// 				// cout<<"p_center_of_object.y: "<<p_center_of_object.y<<endl;
+	// 				if( (k==p_center_of_object.x-s_size)||(k==p_center_of_object.x+s_size-1)||(l==p_center_of_object.y-s_size)||(l==p_center_of_object.y+s_size-1) ){
+	// 					Point t_pp;
+	// 					t_pp.x=k;
+	// 					t_pp.y=l;
+	// 					if((k>=input.cols-s_size*2)||(l>=input.rows-s_size*2)||(k<0)||(l<0)){
+	// 						is_tri=true;
+	// 						break;
+	// 					}
+	// 					// circle(temp_output,t_pp,3,Scalar(255,255,255));
+	// 					if((int)Mpixel(input,k,l)!=0 ){
+	// 						is_tri=true;
+	// 					}
+	// 				}
+
+	// 			}			
+	// 		}
+			
+	// 		s_size=s_size+append_size;
+	// 		cout<<"s_size: "<<s_size<<endl;
+	// 		if(is_tri==false){
+	// 			break;
+	// 		}
+	// 		is_tri=false;
+	// 		if(s_size>250){
+	// 			return s_size*2;
+	// 			cout<<"error for size"<<endl;
+	// 		}
+	// 	}
+	// 	return s_size*2;
+	// }
 	Mat get_blob(){return blob_window;}
 	string get_contour_txt(){return contour_txt;}
 	Mat get_ROI_and_drawing(){return ROI_and_drawing;}
-	Mat get_temp_output_img(){return temp_output;}
+	Mat get_temp_output_img(){return subtracted_frame;}
 	Mat get_thresholded_img(){return ROI_thresholded;}
 	Mat get_merged_samp_output(){return merged_samp_output;}
 	Mat get_merged_samp_output2(){return merged_samp_output2;}

@@ -1914,6 +1914,10 @@ int run_kuwahara(int argc,char *argv[]){
 
 		  	while(true){
 		  		cout<<"index: "<<loop_break<<endl;
+
+		  		cout<<"total_numb: "<<total_numb<<endl;
+		  		
+
 			  	ku_ROI.main(ku,total_numb,loop_break);
 			  	cout<<"p1"<<endl;
 			  	
@@ -1934,7 +1938,7 @@ int run_kuwahara(int argc,char *argv[]){
 				  	// }
 				  	// imshow("0", ku_ROI.get_merged_samp_output2());
 			  		// imshow("merged", ku_ROI.get_merged_samp_output());
-			  		// imshow("drawing", ku_ROI.get_main_ROI_img());
+			  		// imshow("drawing", ku_ROI.get_target_ROI_img());
 			  		// imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
 			  		// // imshow("4", ROI_real[loop_break]);
 			  		// key=waitKey(0);
@@ -1974,6 +1978,7 @@ int run_kuwahara(int argc,char *argv[]){
 						}
 
 			  		}
+
 			  		if(file_numb>=the_number_of_file_in_folder){
 			  			creating_folder(saving_directory1);
 			  			creating_folder(saving_directory2);
@@ -1986,6 +1991,7 @@ int run_kuwahara(int argc,char *argv[]){
 			  			if (contour_file.is_open()){
 						    
 						}else{
+
 							cout << "Unable to open file";
 							exit(0);
 						}
@@ -2002,18 +2008,25 @@ int run_kuwahara(int argc,char *argv[]){
 			  			cout<<"file close"<<endl;
 			  			
 			  		}
-
+			  		cout<<"p4"<<endl;
 				  	string file_type1="_ROI.jpg";
 				  	string file_type2="_contour.jpg";
 			  		string file_name = glob_result.gl_pathv[i+loop_break];
 			  	
-			  		write_img(ku_ROI.get_main_ROI_img() ,saving_directory1,file_name,file_type1);
+			  		write_img(ku_ROI.get_target_ROI_img() ,saving_directory1,file_name,file_type1);
 			  		// write_img(ku_ROI.get_merged_samp_output(), saving_directory1, file_name, file_type1);
 			  		string saving_name=write_img(ku_ROI.get_ROI_and_drawing() ,saving_directory2,file_name,file_type2);
 			  		saving_name=saving_name+'\n';
+
+			  		// imshow("get_target_ROI_img", ku_ROI.get_target_ROI_img());
+			  		// imshow("merged", ku_ROI.get_merged_samp_output());
+			  		// imshow("drawing", ku_ROI.get_main_ROI_img());
+			  		// imshow("get_temp_output_img", ku_ROI.get_temp_output_img());
+			  		
+			  		// key=waitKey(0);
 			  		
 			  		file_numb++;
-			  		
+			  		cout<<"p5"<<endl;
 					
 			  		
 			  		string CE_val=ku_ROI.get_contour_txt(); 
@@ -2024,6 +2037,7 @@ int run_kuwahara(int argc,char *argv[]){
 			  		name_file << saving_name;
 
 			  		myfile << CE_val;
+			  		
 			  	}
 			  	
 			  	
@@ -2033,6 +2047,7 @@ int run_kuwahara(int argc,char *argv[]){
 			  		cout<<"loop break"<<endl;
 			  		break;
 			  	}
+
 			  	
 		  	}
 		  	i=i+total_numb-1;
